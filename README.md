@@ -39,16 +39,31 @@ As long as each device has a browser and internet connection, latency doesn't ma
 
 **Layer 2 (spatial)**: Built on core — world size, viewport management, screen poses, bounding boxes, multi-screen orchestration. Spatial owns all positional semantics.
 
+## Packages & Entry Points
+
+| Package             | Entry point                | What it is                                                                                      |
+| ------------------- | -------------------------- | ---------------------------------------------------------------------------------------------- |
+| `@syncframe/core`   | `@syncframe/core/server`   | React-free protocol + server surface: types, `evaluateScalar`, smoother, `SyncStore`/`SyncTransport` + defaults, `SyncServer` |
+| `@syncframe/core`   | `@syncframe/core/react`    | Client hooks: `useServerClock`, `useAnchor`, `useScalarAnchor`, `useSmoothedValue`             |
+| `@syncframe/core`   | `@syncframe/core`          | Full barrel (everything) — convenience; pulls React in                                         |
+| `@syncframe/redis`  | `@syncframe/redis`         | Redis-backed `SyncStore` + `SyncTransport` adapters (connection-injected)                      |
+| `@syncframe/spatial`| `@syncframe/spatial`       | Layer 2 — screens, poses, world bbox (in progress)                                             |
+
+Import server code from `@syncframe/core/server` and client code from `@syncframe/core/react` so React hooks (and their DOM types) never leak into server bundles.
+
 ## Installation
 
 ```bash
-npm install @syncframe/core
+npm install @syncframe/core            # protocol, server, hooks
+npm install @syncframe/redis ioredis   # optional: Redis backend
 ```
 
 ## Quick Start
 
+Core exposes two focused entry points (plus the full `@syncframe/core` barrel for convenience): `@syncframe/core/server` for the React-free protocol/server surface, and `@syncframe/core/react` for the client hooks.
+
 ```typescript
-import { SyncServer, InMemoryStore, EventEmitterTransport } from '@syncframe/core';
+import { SyncServer, InMemoryStore, EventEmitterTransport } from '@syncframe/core/server';
 
 const server = new SyncServer({
   store: new InMemoryStore(),
@@ -69,7 +84,7 @@ await server.publishUpdate('room1');
 On the client:
 
 ```typescript
-import { evaluateScalar } from '@syncframe/core';
+import { evaluateScalar } from '@syncframe/core/server';
 
 // Given an anchor and synced server time, evaluate current value
 const currentValue = evaluateScalar(anchor, serverNowMs);
@@ -82,7 +97,7 @@ const currentValue = evaluateScalar(anchor, serverNowMs);
 - **`SyncStore`** — Pluggable storage (InMemoryStore, Redis, Postgres, etc.)
 - **`SyncTransport`** — Pluggable pub/sub (EventEmitter, WebSocket, Redis, etc.)
 - **`SyncServer`** — Orchestrates store + transport
-- **React hooks** — `useServerClock`, `useScalarAnchor`, `useSmoothedValue`
+- **React hooks** — `useServerClock`, `useAnchor`, `useScalarAnchor`, `useSmoothedValue`
 
 ## Pluggable Backends
 
@@ -91,10 +106,22 @@ Core ships zero-dependency defaults:
 - **`InMemoryStore`** — Perfect for local dev, single-process demos
 - **`EventEmitterTransport`** — Node.js EventEmitter for single-process pub/sub
 
-Consumers can implement their own:
+For multi-process / serverless deployments, **`@syncframe/redis`** provides `RedisStore` + `RedisTransport`. They're connection-injected — you pass in your own `ioredis` clients, so auth and pooling stay in your app:
 
 ```typescript
-class RedisStore implements SyncStore { /* ... */ }
+import { SyncServer } from '@syncframe/core/server';
+import { RedisStore, RedisTransport } from '@syncframe/redis';
+
+const server = new SyncServer({
+  store: new RedisStore({ redis }),
+  transport: new RedisTransport({ redis, createSubscriber }),
+});
+```
+
+Or implement the interfaces yourself for any other backend:
+
+```typescript
+class PostgresStore implements SyncStore { /* ... */ }
 class WebSocketTransport implements SyncTransport { /* ... */ }
 ```
 
@@ -115,7 +142,7 @@ evaluateScalar(anchor, 1000); // 10
 Clients probe the server repeatedly using NTP-style RTT minimization:
 
 ```typescript
-import { useServerClock } from '@syncframe/core';
+import { useServerClock } from '@syncframe/core/react';
 
 const { serverNowMs, offsetMs, rttMs } = useServerClock('/api/clock');
 ```

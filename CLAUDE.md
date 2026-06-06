@@ -45,14 +45,15 @@ syncframe/
 ├── apps/
 │   └── site/              # Next.js demo site (Vercel deploy root)
 ├── packages/
-│   ├── core/              # @syncframe/core (npm publish)
-│   └── spatial/           # @syncframe/spatial (npm publish)
+│   ├── core/              # @syncframe/core    (npm publish) — protocol + server + hooks
+│   ├── redis/             # @syncframe/redis   (npm publish) — Redis store + transport
+│   └── spatial/           # @syncframe/spatial (npm publish) — Layer 2
 └── pnpm-workspace.yaml
 ```
 
 **Vercel deploy:** Set root directory to `apps/site`.
 
-**npm publish:** Run from `packages/core/` or `packages/spatial/` — only ships `dist/`.
+**npm publish:** Run from a `packages/*` package — only ships `dist/`.
 
 ### 5. Two-Layer Architecture
 
@@ -65,9 +66,19 @@ The library has exactly two layers:
 
 **The rule:** Core has no notion of screens. Spatial has no motion math of its own — it uses `@syncframe/core` purely as infrastructure.
 
+### 5.5. Core Entry Points (`/server` vs `/react`)
+
+`@syncframe/core` declares subpath exports. Import from the focused entry that matches the context — **never** deep-import `@syncframe/core/src/...` (the `exports` map forbids it):
+
+- `@syncframe/core/server` — React-free protocol + server surface (types, `evaluateScalar`, smoother, `SyncStore`/`SyncTransport` + defaults, `SyncServer`). Use from API routes, adapter packages, any Node code.
+- `@syncframe/core/react` — client hooks (`useServerClock`, `useAnchor`, `useScalarAnchor`, `useSmoothedValue`) plus type re-exports. Use from client components.
+- `@syncframe/core` — full barrel; pulls React in. Convenience only.
+
+This keeps hooks (and their DOM-lib types) out of server bundles and non-DOM packages. See [`notes/2026-06-06-package-architecture.md`](notes/2026-06-06-package-architecture.md).
+
 ### 6. Storage and Transport Are Pluggable
 
-The library defines **interfaces** (`SyncStore`, `SyncTransport`) and ships multiple implementations (InMemory, Redis, Postgres). Core must work with zero runtime dependencies (in-memory defaults).
+The library defines **interfaces** (`SyncStore`, `SyncTransport`). Core ships zero-dependency in-memory defaults (`InMemoryStore`, `EventEmitterTransport`); real backends live in their own packages — Redis ships today as **`@syncframe/redis`** (connection-injected, type-only dependency on core). Postgres and others are future packages.
 
 Do **not** hardcode any storage backend into the core package.
 
@@ -81,8 +92,8 @@ Known shortcuts and deferred work go in [`TECH_DEBT.md`](TECH_DEBT.md). All tech
 
 ### 9. Testing
 
-- Unit tests live beside source (`__tests__/` folders inside packages).
-- Pre-push hook runs `type-check → build` across packages.
+- Unit tests live beside source (`__tests__/` folders inside packages and `apps/site`).
+- Pre-push hook runs `type-check`, `lint`, and `test` in parallel, then a `CHECK_BUILD=1` site build.
 - Integration tests that spin up a live server are **expensive** — run only when explicitly asked.
 
 ### 10. Prose Line Wrapping

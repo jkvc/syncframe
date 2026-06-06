@@ -4,32 +4,26 @@ Tracked shortcuts and deferred work. Delete entries once resolved.
 
 ## Entries
 
-### [2026-06-06] Core and spatial packages are placeholder stubs
+### [2026-06-06] Spatial package is still a placeholder stub
 
-- **Context:** Scaffolded the monorepo and package structure before implementation. The `index.ts` files are empty barrels with a `VERSION` export only.
-- **File(s):** `packages/core/src/index.ts`, `packages/spatial/src/index.ts`
-- **Fix:** Implement clock, anchor, evaluator, smoother, store + transport interfaces, and React hooks into `@syncframe/core`. Then implement the screen/pose/calibration code into `@syncframe/spatial`.
-
-### [2026-06-06] No storage backend shipped yet
-
-- **Context:** `@syncframe/core` will define `SyncStore` and `SyncTransport` interfaces with an `InMemoryStore` + `EventEmitterTransport` default, but neither exists yet. Redis and Postgres adapters are planned.
-- **File(s):** `packages/core/src/` (planned)
-- **Fix:** Implement the interfaces + in-memory defaults first, then add Redis and Postgres adapters.
+- **Context:** `@syncframe/core` and `@syncframe/redis` are implemented and exercised by the timer demo, but `@syncframe/spatial` is still an empty barrel with a `VERSION` export only.
+- **File(s):** `packages/spatial/src/index.ts`
+- **Fix:** Implement the screen registry, `ScreenPose`, world bbox, and calibration UI on top of `@syncframe/core`. It rides the existing `@syncframe/redis` backend with no adapter changes (see `notes/2026-06-06-package-architecture.md`).
 
 ### [2026-06-06] No adapter packages yet
 
-- **Context:** Framework-specific route handlers (Next.js, Express, Hono) are planned as thin adapter packages.
+- **Context:** The demo site wires Next.js API routes directly against `@syncframe/core/server`. Framework-specific route handlers (Next.js, Express, Hono) are still planned as thin adapter packages.
 - **File(s):** TBD — `packages/adapter-next/`, `packages/adapter-express/`, etc.
-- **Fix:** Create adapter packages once `@syncframe/core` has a `SyncServer` class. Each adapter is ~30 LOC of request-shape translation.
+- **Fix:** Extract the route-shape translation into adapter packages. Each is ~30 LOC.
 
 ### [2026-06-06] No CI / no GitHub Actions
 
-- **Context:** Repo has no `.github/workflows` yet.
-- **File(s):** TBD
-- **Fix:** Add a workflow that runs `type-check → lint → test → build` on push/PR, once the core package has real code.
+- **Context:** Verification runs locally via the `.husky/pre-push` hook (type-check, lint, test, then build), but there's no `.github/workflows` running the same pipeline on push/PR.
+- **File(s):** TBD — `.github/workflows/`
+- **Fix:** Add a workflow that runs `type-check → lint → test → build`.
 
-### [2026-06-06] Site has only a trivial counter demo
+### [2026-06-06] Spatial demo + docs are placeholders
 
-- **Context:** The root Next.js site has a placeholder page with a local counter. No real sync demos, no documentation pages, no API reference.
-- **File(s):** `app/page.tsx`
-- **Fix:** Add proper documentation pages, API reference, and working demos (e.g., synced counter, synced video player) once the core library is functional.
+- **Context:** `apps/site` has a working timer demo (`/demo/core`) and docs, but the `/demo/spatial` and `/docs/spatial` pages are placeholders pending the spatial package.
+- **File(s):** `apps/site/app/demo/spatial/`, `apps/site/app/docs/spatial/`
+- **Fix:** Build the spatial demo + docs once `@syncframe/spatial` is functional.

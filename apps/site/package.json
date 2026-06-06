@@ -11,8 +11,11 @@
   },
   "dependencies": {
     "@syncframe/core": "workspace:*",
+    "@syncframe/redis": "workspace:*",
     "@syncframe/spatial": "workspace:*",
+    "ioredis": "^5.11.1",
     "next": "16.1.6",
+    "qrcode.react": "^4.2.0",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },

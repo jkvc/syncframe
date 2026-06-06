@@ -1,8 +1,9 @@
 /**
  * @syncframe/core — storage interface.
  *
- * Pluggable storage layer. Core ships InMemoryStore by default.
- * Consumers can implement RedisStore, PostgresStore, etc.
+ * Pluggable storage layer. Core ships InMemoryStore by default;
+ * @syncframe/redis ships RedisStore. Consumers can implement their own
+ * (PostgresStore, etc.).
  */
 
 import type { AnyAnchor, CoreSnapshot } from './types';

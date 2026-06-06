@@ -1,8 +1,9 @@
 /**
  * @syncframe/core — transport interface.
  *
- * Pluggable pub/sub layer. Core ships EventEmitterTransport by default.
- * Consumers can implement RedisPubSub, WebSocket, Cloudflare Durable Objects, etc.
+ * Pluggable pub/sub layer. Core ships EventEmitterTransport by default;
+ * @syncframe/redis ships RedisTransport. Consumers can implement their own
+ * (WebSocket, Cloudflare Durable Objects, etc.).
  */
 
 import type { CoreSnapshot } from './types';

@@ -1,50 +1,24 @@
 /**
- * @syncframe/core — client API.
+ * @syncframe/core — full barrel (back-compat).
  *
- * The minimum protocol for deterministic state extrapolation. Consumers
- * own all domain semantics.
+ * The minimum protocol for deterministic state extrapolation. Consumers own all
+ * domain semantics. This entry re-exports everything; prefer the focused
+ * subpaths in new code:
+ *   - `@syncframe/core/server` — types, evaluator, smoother, store/transport, SyncServer
+ *   - `@syncframe/core/react`  — React hooks (+ type re-exports)
  *
- * Core abstractions:
- * - Anchor<T, M>: deterministic state at server time + motion descriptor
- * - evaluateScalar: pure function to extrapolate scalar motion over time
- * - Server clock: NTP-style offset estimation
- * - Storage/transport: pluggable backends (InMemory, EventEmitter by default)
- * - React hooks: useServerClock, useScalarAnchor, useSmoothedValue
- * - Smoother: exponential chase to hide jitter
+ * Importing from `.` pulls the React hooks in, so server-only contexts should
+ * use `@syncframe/core/server` to stay free of DOM/React.
  */
 
-// Types
-export type {
-  Anchor,
-  AnyAnchor,
-  MotionDescriptor,
-  MotionShape,
-  ScalarMotion,
-  CoreSnapshot,
-  SmootherOptions,
-} from './types';
+// Server-safe surface: types, evaluator, smoother, store/transport, SyncServer.
+export * from './server-entry';
 
-// Evaluators
-export { evaluateScalar } from './evaluators';
-
-// Smoother
-export { smoothStep, createSmoother } from './smoother';
-
-// Storage
-export type { SyncStore } from './store';
-export { buildCoreSnapshot } from './store';
-export { InMemoryStore } from './store-inmemory';
-
-// Transport
-export type { SyncTransport } from './transport';
-export { EventEmitterTransport } from './transport-eventemitter';
-
-// Server
-export type { SyncServerOptions } from './server';
-export { SyncServer } from './server';
-
-// React hooks
+// React hooks. (Types are already exported above via server-entry, so only the
+// hooks and the hook-specific ServerClock type are added here to avoid
+// duplicate-export ambiguity.)
 export { useServerClock } from './useServerClock';
 export type { ServerClock } from './useServerClock';
+export { useAnchor } from './useAnchor';
 export { useScalarAnchor } from './useScalarAnchor';
 export { useSmoothedValue } from './useSmoothedValue';
