@@ -1,9 +1,26 @@
 {
   "name": "@syncframe/core",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "description": "Anchor-based dead-reckoning sync library — Layer 1 (time-event protocol)",
+  "license": "MIT",
   "type": "module",
+  "sideEffects": false,
+  "keywords": [
+    "sync",
+    "dead-reckoning",
+    "clock-sync",
+    "realtime",
+    "anchor",
+    "extrapolation",
+    "react"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jkvc/syncframe.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/jkvc/syncframe/tree/main/packages/core#readme",
+  "bugs": "https://github.com/jkvc/syncframe/issues",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -11,15 +28,20 @@
     "./server": "./src/server-entry.ts",
     "./react": "./src/react-entry.ts"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsup",
     "type-check": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepublishOnly": "pnpm build"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^19",
     "react": "^19",
+    "tsup": "^8.5.1",
     "typescript": "^5"
   },
   "peerDependencies": {
@@ -28,6 +50,25 @@
   "peerDependenciesMeta": {
     "react": {
       "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./server": {
+        "types": "./dist/server.d.ts",
+        "import": "./dist/server.js"
+      },
+      "./react": {
+        "types": "./dist/react.d.ts",
+        "import": "./dist/react.js"
+      }
     }
   }
 }
