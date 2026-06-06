@@ -11,38 +11,38 @@ import { smoothStep } from './smoother';
 import type { SmootherOptions } from './types';
 
 export function useSmoothedValue(
-  value: number,
-  options?: SmootherOptions,
+    value: number,
+    options?: SmootherOptions,
 ): number {
-  const [smoothed, setSmoothed] = useState(value);
-  const lastUpdateRef = useRef<number>(performance.now());
-  const targetRef = useRef(value);
-  const smoothedRef = useRef(value);
-  const optionsRef = useRef(options);
-  optionsRef.current = options;
+    const [smoothed, setSmoothed] = useState(value);
+    const lastUpdateRef = useRef<number>(performance.now());
+    const targetRef = useRef(value);
+    const smoothedRef = useRef(value);
+    const optionsRef = useRef(options);
+    optionsRef.current = options;
 
-  useEffect(() => {
-    targetRef.current = value;
-  }, [value]);
+    useEffect(() => {
+        targetRef.current = value;
+    }, [value]);
 
-  useEffect(() => {
-    let raf: number;
+    useEffect(() => {
+        let raf: number;
 
-    const tick = () => {
-      const now = performance.now();
-      const dt = now - lastUpdateRef.current;
-      lastUpdateRef.current = now;
+        const tick = () => {
+            const now = performance.now();
+            const dt = now - lastUpdateRef.current;
+            lastUpdateRef.current = now;
 
-      const nextValue = smoothStep(targetRef.current, smoothedRef.current, dt, optionsRef.current);
-      smoothedRef.current = nextValue;
-      setSmoothed(nextValue);
+            const nextValue = smoothStep(targetRef.current, smoothedRef.current, dt, optionsRef.current);
+            smoothedRef.current = nextValue;
+            setSmoothed(nextValue);
 
-      raf = requestAnimationFrame(tick);
-    };
+            raf = requestAnimationFrame(tick);
+        };
 
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
+        raf = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(raf);
+    }, []);
 
-  return smoothed;
+    return smoothed;
 }

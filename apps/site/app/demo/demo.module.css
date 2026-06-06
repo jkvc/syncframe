@@ -1,0 +1,123 @@
+.container {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+.breadcrumb {
+  margin-bottom: 1.5rem;
+}
+
+.backLink {
+  color: #666;
+  text-decoration: none;
+  font-size: 0.75rem;
+  transition: color 0.2s;
+}
+
+.backLink:hover {
+  color: #1a1a1a;
+}
+
+.header {
+  margin-bottom: 2.5rem;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 2.25rem;
+  letter-spacing: -0.04em;
+  margin-bottom: 0.5rem;
+  color: #1a1a1a;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.sectionTitle {
+  font-weight: 700;
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+  color: #1a1a1a;
+}
+
+.demoPlaceholder {
+  border: 2px dashed #d4d4d4;
+  border-radius: 4px;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: #fff;
+}
+
+.placeholderText {
+  color: #999;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+}
+
+.placeholderSubtext {
+  color: #666;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+.stepList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.stepItem {
+  display: flex;
+  gap: 0.75rem;
+  line-height: 1.5;
+  color: #333;
+}
+
+.stepNumber {
+  color: #0284c7;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+}
+
+.stepText {
+  margin: 0;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.buttonSecondary {
+  display: inline-block;
+  border: 1px solid #1a1a1a;
+  color: #1a1a1a;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-decoration: none;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.buttonSecondary:hover {
+  background: #1a1a1a;
+  color: #fafafa;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 1.75rem;
+  }
+}

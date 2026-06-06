@@ -1,67 +1,133 @@
-'use client';
-
-import { useState } from 'react';
+import Link from "next/link";
+import styles from "./page.module.css";
 
 export default function Home() {
-  const [count, setCount] = useState(0);
-
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
-      <h1>Syncframe</h1>
+    <div className={`px-6 py-24 max-w-7xl mx-auto ${styles.container}`}>
+      {/* Hero */}
+      <section className={styles.hero}>
+        <h1 className={styles.heroTitle}>
+          DEAD-RECKONING
+          <br />
+          TIME SYNC
+          <br />
+          FOR BROWSERS
+        </h1>
+        <p className={styles.heroSubtitle}>
+          Synchronize continuous state across devices without streaming.
+          Broadcast anchors. Evaluate anywhere. Latency doesn't matter.
+        </p>
+      </section>
 
-      <p>
-        Dead-reckoning time sync for browsers. Sync continuous state across
-        any number of devices with just a browser and an internet connection.
-      </p>
+      {/* Core concept */}
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>HOW IT WORKS</h2>
+        <div className={styles.grid3}>
+          <div>
+            <div className={styles.stepNumber}>01</div>
+            <h3 className={styles.stepTitle}>BROADCAST ANCHORS</h3>
+            <p className={styles.stepText}>
+              Instead of streaming position updates, broadcast rare anchors:
+              timestamp + value + motion descriptor.
+            </p>
+          </div>
+          <div>
+            <div className={styles.stepNumber}>02</div>
+            <h3 className={styles.stepTitle}>SHARED CLOCK</h3>
+            <p className={styles.stepText}>
+              Every client syncs to server time using NTP-style offset estimation.
+              Monotonic. Deterministic.
+            </p>
+          </div>
+          <div>
+            <div className={styles.stepNumber}>03</div>
+            <h3 className={styles.stepTitle}>EVALUATE ANYWHERE</h3>
+            <p className={styles.stepText}>
+              Given an anchor and server time, any client can compute current state
+              via pure math. No network calls.
+            </p>
+          </div>
+        </div>
+      </section>
 
-      <h2>How it works</h2>
-      <p>
-        Instead of streaming position updates, Syncframe broadcasts rare <strong>anchors</strong> —
-        a timestamp + value + motion descriptor. Every client evaluates the current state at any
-        time using a shared clock. Latency doesn't matter.
-      </p>
+      {/* Two layer architecture */}
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>TWO LAYERS</h2>
+        <div className={styles.grid2}>
+          <div className={styles.card}>
+            <div className={styles.layerLabel}>LAYER 1</div>
+            <h3 className={styles.cardTitle}>@syncframe/core</h3>
+            <p className={styles.cardText}>
+              Clock synchronization, anchor protocol, evaluators, smoother, pluggable storage.
+              Zero runtime dependencies.
+            </p>
+            <div className={styles.buttonGroup}>
+              <Link
+                href="/docs/core"
+                className={styles.buttonPrimary}
+              >
+                READ DOCS
+              </Link>
+              <Link
+                href="/demo/core"
+                className={styles.buttonSecondary}
+              >
+                TRY DEMO
+              </Link>
+            </div>
+          </div>
+          <div className={styles.card}>
+            <div className={styles.layerLabelMuted}>LAYER 2</div>
+            <h3 className={styles.cardTitle}>@syncframe/spatial</h3>
+            <p className={styles.cardText}>
+              Screen registry, world-coordinate poses, calibration UI.
+              For multi-display setups where screens have geometric positions.
+            </p>
+            <div className={styles.buttonGroup}>
+              <Link
+                href="/docs/spatial"
+                className={styles.buttonDisabled}
+              >
+                COMING SOON
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <h2>Two layers</h2>
-      <dl>
-        <dt><code>@syncframe/core</code></dt>
-        <dd>
-          Clock synchronization, anchor protocol, evaluators, pluggable storage.
-          No runtime dependencies.
-        </dd>
+      {/* Use cases */}
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>USE CASES</h2>
+        <ul className={styles.useCaseList}>
+          <li className={styles.useCaseItem}>
+            <span className={styles.arrow}>→</span>
+            <span><strong>Video/audio sync</strong> — synchronized playback across devices</span>
+          </li>
+          <li className={styles.useCaseItem}>
+            <span className={styles.arrow}>→</span>
+            <span><strong>Multi-device audio</strong> — turn N phones into a spatial speaker array</span>
+          </li>
+          <li className={styles.useCaseItem}>
+            <span className={styles.arrow}>→</span>
+            <span><strong>Multi-screen installations</strong> — panoramic image flows across N monitors</span>
+          </li>
+          <li className={styles.useCaseItem}>
+            <span className={styles.arrow}>→</span>
+            <span><strong>Collaborative canvas</strong> — distributed 2D drawing surface</span>
+          </li>
+          <li className={styles.useCaseItem}>
+            <span className={styles.arrow}>→</span>
+            <span><strong>Event timers</strong> — identical countdowns across every display</span>
+          </li>
+        </ul>
+      </section>
 
-        <dt><code>@syncframe/spatial</code></dt>
-        <dd>
-          Screen registry, world-coordinate poses, calibration UI.
-          For multi-display setups.
-        </dd>
-      </dl>
-
-      <h2>Demo: Local Counter</h2>
-      <p>
-        This counter is local for now — once the core library is implemented, it will sync
-        across all connected tabs via anchors.
-      </p>
-      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', margin: '1rem 0' }}>
-        <button onClick={() => setCount(c => c - 1)} style={{ padding: '0.5rem 1rem', fontSize: '1.2rem' }}>−</button>
-        <span style={{ fontSize: '2rem', fontVariantNumeric: 'tabular-nums', minWidth: '3rem', textAlign: 'center' }}>
-          {count}
-        </span>
-        <button onClick={() => setCount(c => c + 1)} style={{ padding: '0.5rem 1rem', fontSize: '1.2rem' }}>+</button>
-      </div>
-
-      <h2>Use cases</h2>
-      <ul>
-        <li><strong>Video/audio sync</strong> — synchronized playback across devices</li>
-        <li><strong>Multi-screen displays</strong> — panoramic content spanning multiple monitors</li>
-        <li><strong>Synchronized audio</strong> — multi-device speaker arrays</li>
-        <li><strong>Shared canvas</strong> — collaborative drawing surface across tablets</li>
-        <li><strong>Stage / event timers</strong> — identical countdowns across every display</li>
-      </ul>
-
-      <h2>Status</h2>
-      <p style={{ color: '#888' }}>
-        Early scaffolding — core library implementation in progress.
-      </p>
+      {/* Pitch */}
+      <section className={styles.pitch}>
+        <p className={styles.pitchText}>
+          As long as each device has a browser and internet connection, you can sync continuous state across all of them.
+        </p>
+      </section>
     </div>
   );
 }

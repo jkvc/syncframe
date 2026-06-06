@@ -1,0 +1,215 @@
+.container {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+.hero {
+  margin-bottom: 4rem;
+}
+
+.heroTitle {
+  font-weight: 700;
+  font-size: 2.5rem;
+  letter-spacing: -0.04em;
+  margin-bottom: 1.25rem;
+  line-height: 1.05;
+  color: #1a1a1a;
+}
+
+.heroSubtitle {
+  color: #666;
+  font-size: 1rem;
+  max-width: 36rem;
+  line-height: 1.5;
+}
+
+.section {
+  margin-bottom: 4rem;
+}
+
+.sectionTitle {
+  font-weight: 700;
+  font-size: 1.25rem;
+  margin-bottom: 1.25rem;
+  color: #1a1a1a;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .grid3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stepNumber {
+  color: #0284c7;
+  font-size: 0.7rem;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.stepTitle {
+  font-weight: 700;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  color: #1a1a1a;
+}
+
+.stepText {
+  color: #555;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 1.25rem;
+  background: #fff;
+}
+
+.layerLabel {
+  color: #0284c7;
+  font-size: 0.65rem;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.layerLabelMuted {
+  color: #999;
+  font-size: 0.65rem;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.cardTitle {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #1a1a1a;
+}
+
+.cardText {
+  color: #555;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.buttonPrimary {
+  display: inline-block;
+  background: #1a1a1a;
+  color: #fafafa;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-decoration: none;
+  transition: opacity 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.buttonPrimary:hover {
+  opacity: 0.85;
+}
+
+.buttonSecondary {
+  display: inline-block;
+  border: 1px solid #1a1a1a;
+  color: #1a1a1a;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-decoration: none;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.buttonSecondary:hover {
+  background: #1a1a1a;
+  color: #fafafa;
+}
+
+.buttonDisabled {
+  display: inline-block;
+  background: #d4d4d4;
+  color: #737373;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  cursor: not-allowed;
+}
+
+.useCaseList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.useCaseItem {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #1a1a1a;
+}
+
+.arrow {
+  color: #0284c7;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.pitch {
+  margin-bottom: 4rem;
+  text-align: center;
+}
+
+.pitchText {
+  font-size: 1rem;
+  color: #555;
+  max-width: 40rem;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .heroTitle {
+    font-size: 1.75rem;
+  }
+
+  .heroSubtitle {
+    font-size: 0.875rem;
+  }
+
+  .pitchText {
+    font-size: 0.875rem;
+  }
+}
