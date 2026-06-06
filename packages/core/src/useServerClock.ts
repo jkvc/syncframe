@@ -1,28 +1,43 @@
 /**
  * @syncframe/core — NTP-style server clock.
  *
- * Estimates server time offset using RTT minimization. Client probes server
- * repeatedly, keeps the min-RTT sample, and uses its offset for the clock.
+ * Estimates the server epoch from the client using RTT-minimized probes, then
+ * fits an offset+skew line through recent samples so the clock stays accurate
+ * *between* probes (the local wall clock drifts relative to the server's at a
+ * few tens of ppm). See `clock-model.ts` for the pure math.
  *
- * The offset is an *epoch* correction: `serverEpoch ≈ Date.now() + offsetMs`.
- * The probe midpoint must therefore be measured with `Date.now()` (epoch), not
+ * The model is an *epoch* correction: `serverEpoch ≈ project(localEpoch)`. Probe
+ * midpoints are therefore measured with `Date.now()` (epoch), not
  * `performance.now()` (ms since page load) — mixing the two yields an offset on
  * the order of `Date.now()` itself. `performance.now()` is used only for the
  * round-trip time, where its monotonicity actually helps.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  fitClockModel,
+  effectiveOffset,
+  projectServerNow,
+  IDENTITY_CLOCK_MODEL,
+  type ClockModel,
+  type ClockSample,
+} from './clock-model';
+
+// Re-exported for back-compat: estimateOffset historically lived here.
+export { estimateOffset } from './clock-model';
 
 export interface ServerClock {
   serverNowMs: number;
   offsetMs: number;
+  /** Estimated local-clock drift relative to the server, in parts per million. */
+  skewPpm: number;
   rttMs: number;
   sampleCount: number;
   /**
-   * Live server time, evaluated on call: `Date.now() + offsetMs`. Stable
-   * identity across renders (safe to use in effect deps), but always returns
-   * the latest estimate. Prefer this over reading the snapshot `serverNowMs`,
-   * which is only refreshed on each probe.
+   * Live server time, evaluated on call via the current offset+skew model.
+   * Stable identity across renders (safe to use in effect deps), but always
+   * returns the latest estimate. Prefer this over reading the snapshot
+   * `serverNowMs`, which is only refreshed on each probe.
    */
   serverNow: () => number;
 }
@@ -32,32 +47,26 @@ type ClockState = Omit<ServerClock, 'serverNow'>;
 interface ClockProbe {
   offset: number;
   rtt: number;
-  timestamp: number;
+  localMidMs: number;
 }
 
-/**
- * Estimate the epoch offset to add to local time to get server time, given the
- * server's reported time and the local epoch timestamps bracketing the probe.
- *
- * `offset = serverNow - midpoint(sentAt, receivedAt)`. All three are epoch ms,
- * so the result is the small true clock skew between client and server.
- */
-export function estimateOffset(serverNowMs: number, sentAtMs: number, receivedAtMs: number): number {
-  return serverNowMs - (sentAtMs + receivedAtMs) / 2;
-}
+/** How many recent (per-round, min-RTT) samples to fit the line through. */
+const MAX_HISTORY = 30;
 
 export function useServerClock(endpoint: string, probeIntervalMs = 5000, probeCount = 5): ServerClock {
   const [clock, setClock] = useState<ClockState>({
     serverNowMs: Date.now(),
     offsetMs: 0,
+    skewPpm: 0,
     rttMs: 0,
     sampleCount: 0,
   });
 
-  // Mirror the latest offset in a ref so `serverNow()` can stay a stable
-  // callback while still returning fresh values between renders.
-  const offsetRef = useRef(0);
-  const serverNow = useCallback(() => Date.now() + offsetRef.current, []);
+  // The fitted model and the rolling sample history live in refs so `serverNow()`
+  // can stay a stable callback while returning fresh values between renders.
+  const modelRef = useRef<ClockModel>(IDENTITY_CLOCK_MODEL);
+  const historyRef = useRef<ClockSample[]>([]);
+  const serverNow = useCallback(() => projectServerNow(modelRef.current, Date.now()), []);
 
   useEffect(() => {
     let mounted = true;
@@ -71,9 +80,8 @@ export function useServerClock(endpoint: string, probeIntervalMs = 5000, probeCo
       if (!res.ok) return null;
 
       const data = (await res.json()) as { serverNowMs: number };
-      const offset = estimateOffset(data.serverNowMs, sentAt, receivedAt);
-
-      return { offset, rtt, timestamp: receivedAt };
+      const localMidMs = (sentAt + receivedAt) / 2;
+      return { offset: data.serverNowMs - localMidMs, rtt, localMidMs };
     };
 
     const runProbes = async () => {
@@ -84,18 +92,26 @@ export function useServerClock(endpoint: string, probeIntervalMs = 5000, probeCo
           probes.push(result);
         }
       }
+      if (probes.length === 0 || !mounted) return;
 
-      if (probes.length > 0 && mounted) {
-        // Min-RTT sample is most accurate
-        const best = probes.reduce((a, b) => (a.rtt < b.rtt ? a : b));
-        offsetRef.current = best.offset;
-        setClock((prev) => ({
-          serverNowMs: Date.now() + best.offset,
-          offsetMs: best.offset,
-          rttMs: best.rtt,
-          sampleCount: prev.sampleCount + 1,
-        }));
-      }
+      // The min-RTT probe of this round is the least jittery / most symmetric.
+      const best = probes.reduce((a, b) => (a.rtt < b.rtt ? a : b));
+
+      const history = historyRef.current;
+      history.push({ localMidMs: best.localMidMs, offsetMs: best.offset, weight: 1 / Math.max(best.rtt, 1) });
+      if (history.length > MAX_HISTORY) history.splice(0, history.length - MAX_HISTORY);
+
+      const model = fitClockModel(history);
+      modelRef.current = model;
+
+      const now = Date.now();
+      setClock((prev) => ({
+        serverNowMs: projectServerNow(model, now),
+        offsetMs: effectiveOffset(model, now),
+        skewPpm: model.skew * 1e6,
+        rttMs: best.rtt,
+        sampleCount: prev.sampleCount + 1,
+      }));
     };
 
     runProbes();

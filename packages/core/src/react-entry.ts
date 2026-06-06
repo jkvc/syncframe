@@ -13,6 +13,17 @@ export { useAnchor } from './useAnchor';
 export { useScalarAnchor } from './useScalarAnchor';
 export { useSmoothedValue } from './useSmoothedValue';
 
+// Clock model (pure, React-free) — exposed for advanced consumers (e.g. mapping
+// server time onto a third clock domain like the Web Audio clock).
+export {
+  estimateOffset,
+  fitClockModel,
+  effectiveOffset,
+  projectServerNow,
+  IDENTITY_CLOCK_MODEL,
+} from './clock-model';
+export type { ClockModel, ClockSample } from './clock-model';
+
 // Convenience type re-exports for client consumers.
 export type {
   Anchor,

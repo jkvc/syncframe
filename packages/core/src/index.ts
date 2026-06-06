@@ -22,3 +22,13 @@ export type { ServerClock } from './useServerClock';
 export { useAnchor } from './useAnchor';
 export { useScalarAnchor } from './useScalarAnchor';
 export { useSmoothedValue } from './useSmoothedValue';
+
+// Clock model (pure, React-free).
+export {
+  estimateOffset,
+  fitClockModel,
+  effectiveOffset,
+  projectServerNow,
+  IDENTITY_CLOCK_MODEL,
+} from './clock-model';
+export type { ClockModel, ClockSample } from './clock-model';
