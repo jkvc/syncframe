@@ -2,6 +2,8 @@
 
 The minimum protocol for deterministic state extrapolation across browsers. Instead of streaming state, broadcast **anchors** — "at server time T, value was V, evolving at rate R" — and let any client with a synced clock evaluate the current value with pure math. Consumers own all domain semantics.
 
+Docs and demos: [syncframe.jkvc.ai](https://syncframe.jkvc.ai/)
+
 ## Install
 
 ```bash

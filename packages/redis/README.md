@@ -2,6 +2,8 @@
 
 Redis-backed [`SyncStore`](https://www.npmjs.com/package/@syncframe/core) and `SyncTransport` adapters for [`@syncframe/core`](https://www.npmjs.com/package/@syncframe/core), so a `SyncServer` can persist anchors and fan out snapshots across processes and serverless instances.
 
+Docs and demos: [syncframe.jkvc.ai](https://syncframe.jkvc.ai/)
+
 The adapters are **connection-injected** — you pass in your own [`ioredis`](https://www.npmjs.com/package/ioredis) clients, so connection, auth, and pooling stay in your app. The dependency on core is type-only, so this package adds no runtime coupling.
 
 ## Install

@@ -1,6 +1,6 @@
 {
   "name": "@syncframe/redis",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Redis-backed SyncStore + SyncTransport adapters for @syncframe/core",
   "license": "MIT",
   "type": "module",
@@ -18,7 +18,7 @@
     "url": "git+https://github.com/jkvc/syncframe.git",
     "directory": "packages/redis"
   },
-  "homepage": "https://github.com/jkvc/syncframe/tree/main/packages/redis#readme",
+  "homepage": "https://syncframe.jkvc.ai/",
   "bugs": "https://github.com/jkvc/syncframe/issues",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

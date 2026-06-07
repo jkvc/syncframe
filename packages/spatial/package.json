@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "Screen registry + world-coordinate poses on top of @syncframe/core — Layer 2",
+  "homepage": "https://syncframe.jkvc.ai/",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

@@ -1,6 +1,6 @@
 {
   "name": "@syncframe/core",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Anchor-based dead-reckoning sync library — Layer 1 (time-event protocol)",
   "license": "MIT",
   "type": "module",
@@ -19,7 +19,7 @@
     "url": "git+https://github.com/jkvc/syncframe.git",
     "directory": "packages/core"
   },
-  "homepage": "https://github.com/jkvc/syncframe/tree/main/packages/core#readme",
+  "homepage": "https://syncframe.jkvc.ai/",
   "bugs": "https://github.com/jkvc/syncframe/issues",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
