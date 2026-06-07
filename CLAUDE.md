@@ -53,7 +53,7 @@ syncframe/
 
 **Vercel deploy:** Set root directory to `apps/site`.
 
-**npm publish:** Run from a `packages/*` package — only ships `dist/`.
+**Publishing:** Run `pnpm publish` (NOT `npm publish`) from a `packages/*` package. The dev `package.json` `exports`/`main`/`types` point at `src/` for live workspace editing; the published artifact must use the `dist/` paths in `publishConfig`. `pnpm publish` applies those `publishConfig` field overrides and strips `publishConfig`; plain `npm publish` on this toolchain does **not**, shipping a broken exports map that points at unpublished `src/`. Only `dist/` is shipped (`files`).
 
 ### 5. Two-Layer Architecture
 
