@@ -11,6 +11,7 @@ import {
   fitClockModel,
   projectServerNow,
   effectiveOffset,
+  deriveProbeSample,
   IDENTITY_CLOCK_MODEL,
   type ClockSample,
 } from '../clock-model';
@@ -90,6 +91,52 @@ describe('fitClockModel', () => {
     ];
     const model = fitClockModel(samples);
     expect(model.offsetMs).toBeLessThan(110);
+  });
+});
+
+describe('deriveProbeSample', () => {
+  it('prefers the Resource Timing network span over the Date.now bracket', () => {
+    // The bracket is wide (JS jitter): 1000..1100. The network span is tight
+    // and offset inside it: 1020..1060 → mid 1040, rtt 40.
+    const sample = deriveProbeSample({
+      sentAtMs: 1_000,
+      receivedAtMs: 1_100,
+      net: { requestStartMs: 1_020, responseEndMs: 1_060 },
+    });
+    expect(sample.localMidMs).toBe(1_040);
+    expect(sample.rttMs).toBe(40);
+  });
+
+  it('falls back to the bracket when no network timing is available', () => {
+    const sample = deriveProbeSample({ sentAtMs: 2_000, receivedAtMs: 2_080 });
+    expect(sample.localMidMs).toBe(2_040);
+    expect(sample.rttMs).toBe(80);
+  });
+
+  it('falls back to the bracket when net is explicitly null', () => {
+    const sample = deriveProbeSample({ sentAtMs: 2_000, receivedAtMs: 2_080, net: null });
+    expect(sample.localMidMs).toBe(2_040);
+    expect(sample.rttMs).toBe(80);
+  });
+
+  it('rejects a non-positive network span (clock anomaly) and falls back', () => {
+    const sample = deriveProbeSample({
+      sentAtMs: 5_000,
+      receivedAtMs: 5_050,
+      net: { requestStartMs: 5_030, responseEndMs: 5_030 },
+    });
+    expect(sample.rttMs).toBe(50);
+    expect(sample.localMidMs).toBe(5_025);
+  });
+
+  it('rejects an implausibly large network span (≥ 5s) and falls back', () => {
+    const sample = deriveProbeSample({
+      sentAtMs: 0,
+      receivedAtMs: 120,
+      net: { requestStartMs: 0, responseEndMs: 6_000 },
+    });
+    expect(sample.rttMs).toBe(120);
+    expect(sample.localMidMs).toBe(60);
   });
 });
 

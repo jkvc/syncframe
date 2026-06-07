@@ -6,11 +6,15 @@
  * *between* probes (the local wall clock drifts relative to the server's at a
  * few tens of ppm). See `clock-model.ts` for the pure math.
  *
- * The model is an *epoch* correction: `serverEpoch ≈ project(localEpoch)`. Probe
- * midpoints are therefore measured with `Date.now()` (epoch), not
- * `performance.now()` (ms since page load) — mixing the two yields an offset on
- * the order of `Date.now()` itself. `performance.now()` is used only for the
- * round-trip time, where its monotonicity actually helps.
+ * The model is an *epoch* correction: `serverEpoch ≈ project(localEpoch)`. Each
+ * probe's local midpoint and RTT come from the Resource Timing API when the
+ * browser exposes it — `responseEnd - requestStart` is the pure network span,
+ * free of the main-thread/JS scheduling jitter that contaminates a `Date.now()`
+ * bracket around `fetch`. Those marks are relative to `performance.timeOrigin`,
+ * so we add it back to land in the epoch domain. When Resource Timing is
+ * unavailable (older engines) or unexposed (cross-origin without
+ * `Timing-Allow-Origin`), we transparently fall back to the `Date.now()`
+ * bracket. See `deriveProbeSample` in `clock-model.ts` for the pure reduction.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -18,6 +22,7 @@ import {
   fitClockModel,
   effectiveOffset,
   projectServerNow,
+  deriveProbeSample,
   IDENTITY_CLOCK_MODEL,
   type ClockModel,
   type ClockSample,
@@ -71,17 +76,65 @@ export function useServerClock(endpoint: string, probeIntervalMs = 5000, probeCo
   useEffect(() => {
     let mounted = true;
 
+    // Resolve a (possibly relative) endpoint to the absolute URL the Resource
+    // Timing entries are keyed by.
+    const toAbsolute = (u: string) =>
+      typeof location !== 'undefined' ? new URL(u, location.href).href : u;
+
+    // Capture resource timings via an observer rather than `getEntriesByName`:
+    // the observer is not subject to the (default 250-entry) resource-timing
+    // buffer cap, so frequent cache-busted probes never silently stop landing.
+    const timings = new Map<string, PerformanceResourceTiming>();
+    let observer: PerformanceObserver | null = null;
+    if (typeof PerformanceObserver !== 'undefined') {
+      try {
+        observer = new PerformanceObserver((list) => {
+          for (const e of list.getEntries() as PerformanceResourceTiming[]) {
+            timings.set(e.name, e);
+          }
+        });
+        observer.observe({ type: 'resource', buffered: true });
+      } catch {
+        observer = null;
+      }
+    }
+
     const probe = async (): Promise<ClockProbe | null> => {
+      // Cache-bust so each probe gets its own Resource Timing entry and never a
+      // cached (zero-latency) response.
+      const nonce = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const url = toAbsolute(`${endpoint}${endpoint.includes('?') ? '&' : '?'}_=${nonce}`);
+
       const sentAt = Date.now();
-      const perfStart = performance.now();
-      const res = await fetch(endpoint);
-      const rtt = performance.now() - perfStart;
+      const res = await fetch(url, { cache: 'no-store' });
       const receivedAt = Date.now();
       if (!res.ok) return null;
 
       const data = (await res.json()) as { serverNowMs: number };
-      const localMidMs = (sentAt + receivedAt) / 2;
-      return { offset: data.serverNowMs - localMidMs, rtt, localMidMs };
+
+      // The resource entry may be delivered to the observer a tick after the
+      // fetch promise resolves; give it one macrotask to arrive.
+      let entry = timings.get(url);
+      if (!entry) {
+        await new Promise((r) => setTimeout(r, 0));
+        entry = timings.get(url);
+      }
+      timings.delete(url);
+
+      const net =
+        entry && entry.requestStart > 0 && entry.responseEnd > 0 && performance.timeOrigin > 0
+          ? {
+              requestStartMs: performance.timeOrigin + entry.requestStart,
+              responseEndMs: performance.timeOrigin + entry.responseEnd,
+            }
+          : null;
+
+      const { localMidMs, rttMs } = deriveProbeSample({
+        sentAtMs: sentAt,
+        receivedAtMs: receivedAt,
+        net,
+      });
+      return { offset: data.serverNowMs - localMidMs, rtt: rttMs, localMidMs };
     };
 
     const runProbes = async () => {
@@ -120,6 +173,7 @@ export function useServerClock(endpoint: string, probeIntervalMs = 5000, probeCo
     return () => {
       mounted = false;
       clearInterval(interval);
+      observer?.disconnect();
     };
   }, [endpoint, probeIntervalMs, probeCount]);
 

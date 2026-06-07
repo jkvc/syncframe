@@ -49,6 +49,53 @@ export function estimateOffset(serverNowMs: number, sentAtMs: number, receivedAt
   return serverNowMs - (sentAtMs + receivedAtMs) / 2;
 }
 
+/** Largest half-sensible RTT (ms) before we distrust a Resource-Timing sample. */
+const MAX_PROBE_RTT_MS = 5_000;
+
+/**
+ * Raw timing inputs for one clock probe. The `Date.now()` bracket is always
+ * available; `net` carries the (more accurate) network span from the Resource
+ * Timing API when the browser exposes it (same-origin, or cross-origin with
+ * `Timing-Allow-Origin`). All values are epoch milliseconds.
+ */
+export interface RawProbeTiming {
+  /** `Date.now()` immediately before the fetch. */
+  sentAtMs: number;
+  /** `Date.now()` immediately after the fetch resolves. */
+  receivedAtMs: number;
+  /** Resource Timing network span, converted to epoch (`timeOrigin + mark`). */
+  net?: { requestStartMs: number; responseEndMs: number } | null;
+}
+
+/** Derived per-probe timing: the local epoch midpoint and the round-trip time. */
+export interface ProbeSample {
+  /** Local epoch midpoint of the round trip. */
+  localMidMs: number;
+  /** Round-trip time (ms). */
+  rttMs: number;
+}
+
+/**
+ * Reduce raw probe timing to a `{ localMidMs, rttMs }` sample.
+ *
+ * Prefers the Resource Timing network span (`responseEnd - requestStart`),
+ * which excludes main-thread/JS scheduling jitter that contaminates the
+ * `Date.now()` bracket. Falls back to the bracket when Resource Timing is
+ * unavailable or reports an implausible span (≤ 0 or ≥ 5s).
+ */
+export function deriveProbeSample(t: RawProbeTiming): ProbeSample {
+  if (t.net) {
+    const rttMs = t.net.responseEndMs - t.net.requestStartMs;
+    if (rttMs > 0 && rttMs < MAX_PROBE_RTT_MS) {
+      return { localMidMs: (t.net.requestStartMs + t.net.responseEndMs) / 2, rttMs };
+    }
+  }
+  return {
+    localMidMs: (t.sentAtMs + t.receivedAtMs) / 2,
+    rttMs: t.receivedAtMs - t.sentAtMs,
+  };
+}
+
 /**
  * Weighted least-squares fit of offset vs local time. Returns the offset at the
  * weighted-mean local time plus the skew (slope).
