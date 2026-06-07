@@ -1,10 +1,32 @@
 import type { Metadata } from "next";
+import { Instrument_Serif, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import SiteFooter from "@/components/site/SiteFooter";
+import SiteHeader from "@/components/site/SiteHeader";
+import { SITE } from "@/lib/site";
 import "./globals.css";
-import Link from "next/link";
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+});
 
 export const metadata: Metadata = {
-  title: "Syncframe",
-  description: "Dead-reckoning time sync for browsers",
+  title: SITE.name,
+  description: SITE.description,
 };
 
 export default function RootLayout({
@@ -13,31 +35,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen flex flex-col bg-[#fafafa] text-[#1a1a1a]">
-        <header className="border-b border-[#e5e5e5] px-6 py-3">
-          <nav className="flex items-center justify-between max-w-6xl mx-auto">
-            <Link href="/" className="font-mono font-bold text-base tracking-tight">
-              SYNCFRAME
-            </Link>
-            <div className="flex gap-6 font-mono text-xs">
-              <Link href="/docs/core" className="text-[#666] hover:text-[#1a1a1a] transition-colors">
-                DOCS
-              </Link>
-              <Link href="/demo/core" className="text-[#666] hover:text-[#1a1a1a] transition-colors">
-                DEMOS
-              </Link>
-            </div>
-          </nav>
-        </header>
-        <main className="flex-1">
-          {children}
-        </main>
-        <footer className="border-t border-[#e5e5e5] px-6 py-3">
-          <div className="max-w-6xl mx-auto text-center text-[#666] text-xs font-mono">
-            SYNCFRAME © 2026
-          </div>
-        </footer>
+    <html lang="en" className="bg-paper">
+      <body
+        className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} flex min-h-screen flex-col antialiased`}
+      >
+        <SiteHeader />
+        <main className="flex-1">{children}</main>
+        <SiteFooter />
       </body>
     </html>
   );

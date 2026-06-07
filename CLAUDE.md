@@ -100,6 +100,10 @@ Known shortcuts and deferred work go in [`TECH_DEBT.md`](TECH_DEBT.md). All tech
 
 Do **not** hard-wrap paragraphs in Markdown content. Write each paragraph as a single unwrapped line. Editor word wrap is on. Blank lines still separate blocks.
 
+### 11. Site Visual Design
+
+The demo/docs site (`apps/site`) follows the neo-brutalist stamp system documented in [`STYLE.md`](STYLE.md). Read it when creating or modifying site UI. Implementation details and component map: [`notes/2026-06-07-site-design-system.md`](notes/2026-06-07-site-design-system.md).
+
 ## Running Verification
 
 ```bash

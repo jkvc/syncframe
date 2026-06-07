@@ -27,3 +27,9 @@ Tracked shortcuts and deferred work. Delete entries once resolved.
 - **Context:** `apps/site` has a working timer demo (`/demo/core`) and docs, but the `/demo/spatial` and `/docs/spatial` pages are placeholders pending the spatial package.
 - **File(s):** `apps/site/app/demo/spatial/`, `apps/site/app/docs/spatial/`
 - **Fix:** Build the spatial demo + docs once `@syncframe/spatial` is functional.
+
+### [2026-06-07] Unused Instrument Serif font load
+
+- **Context:** The site wordmark uses italic Space Grotesk, not serif. `Instrument_Serif` is still imported in `app/layout.tsx` and `--font-serif` remains in `globals.css` from an earlier iteration.
+- **File(s):** `apps/site/app/layout.tsx`, `apps/site/app/globals.css`
+- **Fix:** Remove the font import, CSS variable, and body className entry.

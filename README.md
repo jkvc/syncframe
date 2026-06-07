@@ -190,3 +190,14 @@ function evaluateLinear2d(anchor, serverNowMs) {
 ## License
 
 MIT
+
+## Demo site
+
+The monorepo includes a Next.js docs + demo app at `apps/site` (Vercel deploy root). Run it from the repo root:
+
+```bash
+pnpm dev          # localhost:3000
+pnpm --filter site build:check   # isolated build while dev server runs
+```
+
+Live pages: `/` (landing), `/docs/core`, `/demo/core` (global synced timer). Spatial routes are placeholders. Site UI conventions: [`STYLE.md`](STYLE.md).

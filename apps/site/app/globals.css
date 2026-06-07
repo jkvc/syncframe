@@ -1,10 +1,123 @@
 @import "tailwindcss";
 
+@theme inline {
+  --font-sans: var(--font-space-grotesk), "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-serif: var(--font-instrument-serif), Georgia, "Times New Roman", serif;
+
+  /* Blueprint protocol palette — cool paper, deep navy ink, teal accent. */
+  --color-paper: #eef2f6;
+  --color-surface: #ffffff;
+  --color-surface-2: #e2e8f0;
+  --color-surface-sunken: #e8edf2;
+  --color-ink: #0c1222;
+  --color-ink-muted: #3d4f66;
+  --color-ink-faint: #8b9cb3;
+  --color-rule: #c5d0dc;
+  --color-hot: #0d9488;
+  --color-hot-deep: #0f766e;
+
+  /* Stamped offset shadows — flat, hard, in ink color */
+  --shadow-sm: 2px 2px 0 0 var(--color-ink);
+  --shadow-md: 4px 4px 0 0 var(--color-ink);
+  --shadow-lg: 6px 6px 0 0 var(--color-ink);
+
+  /* Sharp corners everywhere */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-full: 9999px;
+}
+
+/* --- Base --- */
+
+html,
 body {
-  background: #fafafa;
-  color: #1a1a1a;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  font-size: 14px;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+}
+
+body {
+  position: relative;
+  font-family: var(--font-sans);
+  font-size: 15px;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizelegibility;
+}
+
+/* Blueprint grid on every page — fixed behind content. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.45;
+  background-image:
+    linear-gradient(90deg, rgba(12, 18, 34, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(12, 18, 34, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  mask-image: radial-gradient(75% 55% at 50% 0%, #000 35%, transparent 100%);
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+::selection {
+  background: var(--color-hot);
+  color: var(--color-surface);
+}
+
+dialog:open {
+  display: block;
+}
+
+dialog::backdrop {
+  background: color-mix(in srgb, var(--color-ink) 30%, transparent);
+}
+
+/* --- Utilities --- */
+
+@utility caption-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+@utility hairline {
+  border-top-width: 2px;
+  border-top-style: solid;
+  border-top-color: var(--color-rule);
+}
+
+@utility scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility prose-doc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-ink-muted);
+
+  & a {
+    color: var(--color-hot);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-hot) 40%, transparent);
+  }
+
+  & strong {
+    color: var(--color-ink);
+    font-weight: 700;
+  }
 }
