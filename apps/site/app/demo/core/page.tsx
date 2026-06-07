@@ -50,8 +50,9 @@ export default function CoreDemo() {
             evaluates the anchor locally every frame — no value streaming.
           </StepItem>
           <StepItem number="04">
-            Because the math is deterministic, latency doesn&apos;t matter: every
-            client lands on the same number for any given moment.
+            Evaluation is deterministic — every client computes the same value for
+            a given server moment. After clock sync, clients typically agree within
+            ~30ms.
           </StepItem>
         </StepList>
       </DocSection>

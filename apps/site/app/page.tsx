@@ -25,7 +25,7 @@ export default function Home() {
             browsers
           </h1>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-muted">
-            {SITE.description} Latency doesn&apos;t matter.
+            {SITE.description}
           </p>
         </StampShell>
       </section>
@@ -88,8 +88,7 @@ export default function Home() {
         <StampShell variant="card" bleed={false}>
           <ul className="divide-y-2 divide-rule p-5 sm:p-6">
             {[
-              ["Video/audio sync", "synchronized playback across devices"],
-              ["Multi-device audio", "turn N phones into a spatial speaker array"],
+              ["Video sync", "synchronized playback across devices"],
               ["Multi-screen installations", "panoramic image flows across N monitors"],
               ["Collaborative canvas", "distributed 2D drawing surface"],
               ["Event timers", "identical countdowns across every display"],

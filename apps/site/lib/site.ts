@@ -3,5 +3,5 @@ export const SITE = {
   name: "Syncframe",
   tagline: "Sync continuous state across browsers",
   description:
-    "Synchronize continuous state across devices without streaming. Broadcast anchors. Evaluate anywhere.",
+    "Synchronize continuous state across devices without streaming. Broadcast anchors. Evaluate anywhere. Clients typically agree within ~30ms of server time.",
 } as const;

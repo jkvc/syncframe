@@ -26,12 +26,11 @@ interface Anchor<T, M> {
 ## Use Cases
 
 - **Video playback sync**: Anchor at time T, value = playback position, rate = 1.0 (or 0 for paused, 2.0 for 2x speed)
-- **Audio sync**: Multi-device speaker arrays synchronized to sub-millisecond precision
 - **Multi-screen installations**: Positional data synced across displays
 - **Countdown timers**: Rate = -1.0 for reverse counting
 - **Progress bars**: Rate = percentage per millisecond
 
-As long as each device has a browser and internet connection, latency doesn't matter — the protocol extrapolates state deterministically.
+With a browser and internet connection, clients extrapolate state deterministically from shared anchors. Clock sync typically lands within ~30ms of server time — enough for video, timers, and UI; not sample-accurate.
 
 ## Two-Layer Architecture
 
