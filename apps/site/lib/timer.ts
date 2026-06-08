@@ -19,8 +19,8 @@ export type TimerAnchor = Anchor<number, ScalarMotion>;
 
 export type TimerAction = 'reset' | 'toggle' | 'speed';
 
-/** Timer anchor channel id — client-safe. Namespace is bound server-side in lib/sync.ts. */
-export const CHANNEL_ID = 'timer';
+/** Timer anchor channel id — client-safe. Namespace is bound server-side in lib/timer-server.ts. */
+export const TIMER_CHANNEL_ID = 'timer';
 
 /** Countdown start value, in seconds. */
 export const TIMER_DEFAULT_SECONDS = 60;

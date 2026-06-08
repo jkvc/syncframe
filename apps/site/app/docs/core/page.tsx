@@ -154,7 +154,7 @@ const value = anchor
           <Pill href="/docs/redis" size="xs">
             Redis adapter
           </Pill>
-          <Pill href="/demo/core" active size="xs">
+          <Pill href="/demo/timer" active size="xs">
             Timer demo
           </Pill>
         </ActionRow>

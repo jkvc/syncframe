@@ -16,17 +16,17 @@ Tracked shortcuts and deferred work. Delete entries once resolved.
 - **File(s):** TBD — `.github/workflows/`
 - **Fix:** Add a workflow that runs `type-check → lint → test → build`.
 
-### [2026-06-07] Spatial demo API has no authentication
+### [2026-06-07] Dot demo API has no authentication
 
-- **Context:** All `/api/spatial/*` routes are open to any visitor. Mutations affect the shared `spatial-demo` room (register/delete screens, poses, dot control, identify).
-- **File(s):** `apps/site/app/api/spatial/`
+- **Context:** All `/api/dot/*` routes are open to any visitor. Mutations affect the shared `dot-demo` room (register/delete screens, poses, dot control, identify).
+- **File(s):** `apps/site/app/api/dot/`
 - **Fix:** Gate mutations behind auth or a dev-only env flag; or scope rooms per tenant/session.
 
-### [2026-06-07] No world-bbox resize route in spatial demo
+### [2026-06-07] No world-bbox resize route in dot demo
 
 - **Context:** `setWorldBbox` reducer exists; world canvas is still fixed at 1920×1080 in the demo because no API route re-anchors the dot on resize.
-- **File(s):** `apps/site/app/api/spatial/`
-- **Fix:** Add `/api/spatial/world-bbox` route, re-anchor dot on resize (mirror cabin world-bbox route).
+- **File(s):** `apps/site/app/api/dot/`
+- **Fix:** Add `/api/dot/world-bbox` route, re-anchor dot on resize (mirror cabin world-bbox route).
 
 ### [2026-06-07] SSE connection sharing via core snapshot cache
 

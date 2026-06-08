@@ -58,7 +58,7 @@ const server = new SyncServer({
           <Pill href="/docs/core" size="xs">
             Core docs
           </Pill>
-          <Pill href="/demo/core" active size="xs">
+          <Pill href="/demo/timer" active size="xs">
             Timer demo
           </Pill>
         </ActionRow>

@@ -12,9 +12,6 @@
 
 import Redis from 'ioredis';
 
-export const TIMER_KEY = 'syncframe:timer:global';
-export const TIMER_CHANNEL = 'syncframe:timer:updates';
-
 function redisUrl(): string {
   const url = process.env.REDIS_URL;
   if (!url) throw new Error('REDIS_URL is not set');

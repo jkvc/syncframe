@@ -1,6 +1,6 @@
 # STYLE.md
 
-Visual design for **`apps/site`** — the Syncframe docs, demo, and landing pages. The npm packages ship no UI; spatial demo calibration chrome in `apps/site` follows these conventions.
+Visual design for **`apps/site`** — the Syncframe docs, demo, and landing pages. The npm packages ship no UI; dot and ring demo calibration chrome in `apps/site` follows these conventions.
 
 Architectural context and jkvc sibling comparison: [`notes/2026-06-07-site-design-system.md`](notes/2026-06-07-site-design-system.md).
 

@@ -92,7 +92,7 @@ interface ScreenPose {
 
       <DocSection title="Wire SpatialServer">
         <p>
-          Bind one <code className="font-mono text-sm">SyncServer</code> namespace for your spatial app (the site demo uses <code className="font-mono text-sm">spatial-demo</code>). <code className="font-mono text-sm">SpatialServer</code> read-modify-writes the <code className="font-mono text-sm">spatial</code> key under that server&apos;s meta.
+          Bind one <code className="font-mono text-sm">SyncServer</code> namespace for your spatial app (the site demo uses <code className="font-mono text-sm">dot-demo</code>). <code className="font-mono text-sm">SpatialServer</code> read-modify-writes the <code className="font-mono text-sm">spatial</code> key under that server&apos;s meta.
         </p>
         <CodeBlock
           code={`import { SyncServer } from '@syncframe/core/server';
@@ -102,7 +102,7 @@ import { SpatialServer, ensureScreen } from '@syncframe/spatial/server';
 const sync = new SyncServer({
   store: new RedisStore({ redis }),
   transport: new RedisTransport({ redis, createSubscriber }),
-  namespace: 'spatial-demo',
+  namespace: 'dot-demo',
 });
 
 const spatial = new SpatialServer({ sync });
@@ -161,7 +161,7 @@ const screenX = (worldX - pose.worldX) * scaleX;`}
 import { useSpatialSnapshot, listScreenNames, isScreenOnline } from '@syncframe/spatial/react';
 
 const { spatial, snapshot, connected } = useSpatialSnapshot({
-  streamEndpoint: '/api/spatial/stream',
+  streamEndpoint: '/api/dot/stream',
 });
 
 // Display — registry + pose + heartbeat + identify
@@ -169,15 +169,15 @@ import { useDisplaySurface } from '@syncframe/spatial/react';
 
 const { pose, isCalibration, isContent, deleted, identifyTrigger } = useDisplaySurface({
   screenName: 'wall-left',
-  streamEndpoint: '/api/spatial/stream',
-  apiBase: '/api/spatial',
+  streamEndpoint: '/api/dot/stream',
+  apiBase: '/api/dot',
   heartbeat: true,
 });
 
 // Content motion — separate core anchor channel
 import { useAnchor } from '@syncframe/core/react';
 
-const dotAnchor = useAnchor('dot', '/api/spatial/stream');`}
+const dotAnchor = useAnchor('dot', '/api/dot/stream');`}
           note="Partition scope is server-side: your stream route binds SyncServer.namespace. Hooks only pass channel id + stream URL."
         />
       </DocSection>
@@ -199,7 +199,7 @@ const dotAnchor = useAnchor('dot', '/api/spatial/stream');`}
 
       <DocSection title="API routes (consumer pattern)">
         <p>
-          The site demo implements thin Next.js routes under <code className="font-mono text-sm">/api/spatial/*</code>. Each mutating route calls <code className="font-mono text-sm">spatial.apply(...)</code> then <code className="font-mono text-sm">spatial.publish()</code>. The stream route merges identify triggers and prunes stale sessions before fan-out.
+          The site demo implements thin Next.js routes under <code className="font-mono text-sm">/api/dot/*</code>. Each mutating route calls <code className="font-mono text-sm">spatial.apply(...)</code> then <code className="font-mono text-sm">spatial.publish()</code>. The stream route merges identify triggers and prunes stale sessions before fan-out.
         </p>
         <RefList>
           <RefRow label="GET /stream" note="SSE CoreSnapshot; : open preamble; ensureAnchor for content channel" />
@@ -209,7 +209,7 @@ const dotAnchor = useAnchor('dot', '/api/spatial/stream');`}
           <RefRow label="POST /heartbeat" note="Upserts session on screen entry" />
           <RefRow label="POST /render-mode" note="{ mode: 'calibration' | 'content' }" />
           <RefRow label="POST /identify" note="{ name } — transient trigger (demo: separate Redis key, 5s TTL)" />
-          <RefRow label="POST /dot" note="{ action: 'start' | 'pause' | 'reset' } — consumer-owned anchor" />
+          <RefRow label="POST /control" note="{ action: 'start' | 'pause' | 'reset' } — consumer-owned anchor" />
         </RefList>
       </DocSection>
 
@@ -278,13 +278,13 @@ import { dotLayer } from '@/lib/dot-layer';
 // Thin page glue: register screenName, then one spatial component
 <ChromeFreeDisplay
   screenName="left"
-  streamEndpoint="/api/spatial/stream"
-  apiBase="/api/spatial"
+  streamEndpoint="/api/dot/stream"
+  apiBase="/api/dot"
   clockEndpoint="/api/clock"
   contentLayer={dotLayer}
   presentation
 />`}
-          note="Site demo: /demo/spatial/display?screenName=left. Registration is app glue; rendering is entirely ChromeFreeDisplay + contentLayer."
+          note="Site demo: /demo/dot/display?screenName=left. Registration is app glue; rendering is entirely ChromeFreeDisplay + contentLayer."
         />
       </DocSection>
 
@@ -294,7 +294,7 @@ import { dotLayer } from '@/lib/dot-layer';
         </p>
         <CodeBlock
           code={`// Demo: Redis key syncframe:{namespace}:spatial:identify (EX 5s)
-// Merged in buildSpatialDemoSnapshot() — not persisted in meta JSON
+// Merged in buildDotDemoSnapshot() — not persisted in meta JSON
 
 // Bundled in ChromeFreeDisplay; also importable from @syncframe/spatial/ui
 <IdentifyFlash trigger={identifyTrigger} screenName={screenName} />`}
@@ -304,7 +304,7 @@ import { dotLayer } from '@/lib/dot-layer';
       <DocSection title="Calibration workflow">
         <StepList>
           <StepItem number="01">
-            Open the display URL on each monitor: <code className="font-mono text-sm">/demo/spatial/display?screenName=wall-left</code>. The page auto-registers the name.
+            Open the display URL on each monitor: <code className="font-mono text-sm">/demo/dot/display?screenName=wall-left</code>. The page auto-registers the name.
           </StepItem>
           <StepItem number="02">
             On the operator page, confirm screens show online (heartbeat). Edit poses in world coordinates — each pose is the world rectangle that display maps to its viewport.
@@ -323,7 +323,7 @@ import { dotLayer } from '@/lib/dot-layer';
 
       <DocSection title="Dot demo (reference consumer)">
         <p>
-          The <a href="/demo/spatial" className="text-hot underline">spatial demo</a> is a bouncing-circle layer on a <code className="font-mono text-sm">dot</code> anchor channel. Motion lives in <code className="font-mono text-sm">lib/dot.ts</code>; the <code className="font-mono text-sm">SpatialContentLayer</code> module is <code className="font-mono text-sm">lib/dot-layer.tsx</code> (shared <code className="font-mono text-sm">evaluateFrame</code> for map + display).
+          The <a href="/demo/dot" className="text-hot underline">dot demo</a> is a bouncing-circle layer on a <code className="font-mono text-sm">dot</code> anchor channel. Motion lives in <code className="font-mono text-sm">lib/dot.ts</code>; the <code className="font-mono text-sm">SpatialContentLayer</code> module is <code className="font-mono text-sm">lib/dot-layer.tsx</code> (shared <code className="font-mono text-sm">evaluateFrame</code> for map + display).
         </p>
         <CodeBlock
           code={`// dot-layer.tsx — data + consumer renderers
@@ -335,7 +335,7 @@ export const dotLayer: SpatialContentLayer = {
 };
 
 // Motion math (no React): apps/site/lib/dot.ts`}
-          note="Registry: lib/spatial-content-registry.ts. Display omits debug labels in presentation mode."
+          note="useDotContentLayer() wires the layer for operator + display. Display omits debug labels in presentation mode."
         />
       </DocSection>
 
@@ -387,7 +387,7 @@ export const dotLayer: SpatialContentLayer = {
 
       <DocSection title="Next steps">
         <ActionRow>
-          <Pill href="/demo/spatial" active size="xs">
+          <Pill href="/demo/dot" active size="xs">
             Dot demo
           </Pill>
           <Pill href="/docs/core" size="xs">

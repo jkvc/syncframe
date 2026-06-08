@@ -199,4 +199,4 @@ pnpm dev          # localhost:3000
 pnpm --filter site build:check   # isolated build while dev server runs
 ```
 
-Live pages: `/` (landing), `/docs/core`, `/demo/core` (global synced timer). Spatial routes are placeholders. Site UI conventions: [`STYLE.md`](STYLE.md).
+Live pages: `/` (landing), `/docs/core`, `/demo/timer` (global synced timer), `/demo/dot`, `/demo/ring`. Site UI conventions: [`STYLE.md`](STYLE.md).

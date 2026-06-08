@@ -62,7 +62,7 @@ export default function Home() {
                 <Pill href="/docs/core" active size="xs">
                   Read docs
                 </Pill>
-                <Pill href="/demo/core" size="xs">
+                <Pill href="/demo/timer" size="xs">
                   Try demo
                 </Pill>
               </>
@@ -77,7 +77,7 @@ export default function Home() {
                 <Pill href="/docs/spatial" active size="xs">
                   Read docs
                 </Pill>
-                <Pill href="/demo/spatial" size="xs">
+                <Pill href="/demo/dot" size="xs">
                   Try demo
                 </Pill>
               </>

@@ -9,7 +9,7 @@ import {
   maxRippleRadius,
 } from '../dot-layer';
 import { buildInitialDotAnchor, DOT_SQUARE_SIZE } from '../dot';
-import { DOT_CHANNEL_ID } from '../spatial-config';
+import { DOT_CHANNEL_ID } from '../dot-config';
 
 function mockClock(now: number): ServerClock {
   return {

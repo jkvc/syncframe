@@ -1,14 +1,14 @@
-import { getSyncServer, CHANNEL_ID } from '@/lib/sync';
-import { defaultAnchor } from '@/lib/timer';
+import { getTimerSyncServer } from '@/lib/timer-server';
+import { TIMER_CHANNEL_ID, defaultAnchor } from '@/lib/timer';
 
 export const dynamic = 'force-dynamic';
 
 // Server-Sent Events: stream the CoreSnapshot to the connected client.
 // useAnchor / useScalarAnchor on the client consume this wire format directly.
 export async function GET() {
-  const server = getSyncServer();
+  const server = getTimerSyncServer();
 
-  await server.ensureAnchor(CHANNEL_ID, () => defaultAnchor(Date.now()));
+  await server.ensureAnchor(TIMER_CHANNEL_ID, () => defaultAnchor(Date.now()));
 
   const encoder = new TextEncoder();
   let heartbeat: ReturnType<typeof setInterval> | undefined;

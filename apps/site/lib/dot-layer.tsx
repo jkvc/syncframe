@@ -10,7 +10,7 @@ import type {
 import type { ContentLayerDisplayProps, WorldPreviewContext } from '@syncframe/spatial/ui';
 import { DotMapView, DotViewport } from './dot-render';
 import { DOT_CHANNEL_ID, evaluateLinear2dBouncing, type DotAnchor } from './dot';
-import { SPATIAL_STREAM_ENDPOINT } from './spatial-config';
+import { DOT_STREAM_ENDPOINT } from './dot-config';
 
 export const DOT_COLORS = [
   '#ff5277',
@@ -304,4 +304,4 @@ export const dotLayer: SpatialContentLayer = {
   Display: NullDisplay,
 };
 
-export { SPATIAL_STREAM_ENDPOINT };
+export { DOT_STREAM_ENDPOINT };

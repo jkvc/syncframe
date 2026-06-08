@@ -3,6 +3,6 @@ import { snapshotStreamCacheKey } from '../snapshotStreamCache';
 
 describe('snapshotStreamCacheKey', () => {
   it('uses the stream endpoint as the cache key', () => {
-    expect(snapshotStreamCacheKey('/api/spatial/stream')).toBe('/api/spatial/stream');
+    expect(snapshotStreamCacheKey('/api/dot/stream')).toBe('/api/dot/stream');
   });
 });

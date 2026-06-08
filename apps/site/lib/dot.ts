@@ -4,7 +4,7 @@
 
 import type { Anchor, MotionDescriptor } from '@syncframe/core/server';
 import { DEFAULT_WORLD_HEIGHT, DEFAULT_WORLD_WIDTH } from '@syncframe/spatial/server';
-import { DOT_CHANNEL_ID } from './spatial-config';
+import { DOT_CHANNEL_ID } from './dot-config';
 
 export { DOT_CHANNEL_ID };
 

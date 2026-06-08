@@ -28,6 +28,19 @@ function isItemActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+/** Longest matching prefix wins when demo hrefs share a common prefix. */
+export function resolveActiveNavHref(
+  pathname: string,
+  items: readonly NavMenuItem[],
+): string | null {
+  let best: NavMenuItem | null = null;
+  for (const item of items) {
+    if (!isItemActive(pathname, item.href)) continue;
+    if (!best || item.href.length > best.href.length) best = item;
+  }
+  return best?.href ?? null;
+}
+
 export default function NavMenu({
   label,
   items,
@@ -112,7 +125,7 @@ export default function NavMenu({
             )}
           >
             {items.map((item) => {
-              const itemActive = isItemActive(pathname, item.href);
+              const itemActive = resolveActiveNavHref(pathname, items) === item.href;
               return (
                 <Link
                   key={item.href}

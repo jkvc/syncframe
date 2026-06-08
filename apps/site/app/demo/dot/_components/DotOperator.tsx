@@ -1,0 +1,218 @@
+'use client';
+
+import { useMemo, useState } from 'react';
+import { useServerClock, useAnchor } from '@syncframe/core/react';
+import {
+  useSpatialSnapshot,
+  listScreenNames,
+  isScreenOnline,
+  colorFromName,
+} from '@syncframe/spatial/react';
+import { TopDownRoomMap } from '@syncframe/spatial/ui';
+import Pill from '@/components/editorial/Pill';
+import StampShell from '@/components/ui/StampShell';
+import {
+  DOT_API_BASE,
+  DOT_STREAM_ENDPOINT,
+  DOT_MAX_SCREENS,
+  DOT_CHANNEL_ID,
+} from '@/lib/dot-config';
+import type { DotAnchor } from '@/lib/dot';
+import { useDotContentLayer } from '@/lib/dot-layer';
+import DotPoseEditor from './DotPoseEditor';
+
+export function DotOperator() {
+  const { spatial, snapshot, connected } = useSpatialSnapshot({
+    streamEndpoint: DOT_STREAM_ENDPOINT,
+  });
+  const clock = useServerClock('/api/clock');
+  const dotAnchor = useAnchor(DOT_CHANNEL_ID, DOT_STREAM_ENDPOINT) as DotAnchor | null;
+  const contentLayer = useDotContentLayer();
+  const [newName, setNewName] = useState('');
+
+  const names = useMemo(
+    () => (spatial ? listScreenNames(spatial) : []),
+    [spatial],
+  );
+
+  const dotRunning =
+    !!dotAnchor &&
+    (dotAnchor.motion.vxUnitsPerMs !== 0 || dotAnchor.motion.vyUnitsPerMs !== 0);
+
+  if (!spatial || !snapshot) {
+    return (
+      <p className="caption-mono text-ink-faint">
+        Connecting{connected ? '' : ' (offline)'}…
+      </p>
+    );
+  }
+
+  const dotAction = (action: 'start' | 'pause' | 'reset') =>
+    fetch(`${DOT_API_BASE}/control`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action }),
+    });
+
+  const setRenderMode = (mode: 'calibration' | 'content') =>
+    fetch(`${DOT_API_BASE}/render-mode`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode }),
+    });
+
+  const atScreenLimit = names.length >= DOT_MAX_SCREENS;
+
+  const registerScreen = async () => {
+    const name = newName.trim();
+    if (!name || atScreenLimit) return;
+    const res = await fetch(`${DOT_API_BASE}/screens/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) return;
+    setNewName('');
+  };
+
+  const deleteScreen = async (name: string) => {
+    await fetch(`${DOT_API_BASE}/screens/delete?name=${encodeURIComponent(name)}`, {
+      method: 'DELETE',
+    });
+  };
+
+  const identify = (name: string) =>
+    fetch(`${DOT_API_BASE}/identify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+
+  return (
+    <div className="space-y-6">
+      <StampShell variant="card" bleed={false}>
+        <div className="flex flex-wrap items-center gap-2 p-4">
+          <Pill
+            size="xs"
+            active={spatial.renderMode === 'calibration'}
+            onClick={() => void setRenderMode('calibration')}
+          >
+            Calibration
+          </Pill>
+          <Pill
+            size="xs"
+            active={spatial.renderMode === 'content'}
+            onClick={() => void setRenderMode('content')}
+          >
+            Content
+          </Pill>
+          <span className="mx-1 text-ink-faint">|</span>
+          {dotRunning ? (
+            <Pill size="xs" onClick={() => void dotAction('pause')}>
+              Pause dot
+            </Pill>
+          ) : (
+            <Pill size="xs" active onClick={() => void dotAction('start')}>
+              {dotAnchor ? 'Resume dot' : 'Start dot'}
+            </Pill>
+          )}
+          <Pill size="xs" onClick={() => void dotAction('reset')}>
+            Reset dot
+          </Pill>
+          <span className="caption-mono ml-auto text-ink-faint">
+            {connected ? 'SSE connected' : 'SSE offline'} · layer {contentLayer.id}
+          </span>
+        </div>
+      </StampShell>
+
+      <StampShell variant="card" bleed={false} className="p-3">
+        <TopDownRoomMap
+          spatial={spatial}
+          snapshot={snapshot}
+          clock={clock}
+          MapView={contentLayer.MapView}
+          selectedScreenName={null}
+        />
+      </StampShell>
+
+      <div className="space-y-3">
+        {names.map((name) => {
+          const entry = spatial.screens[name]!;
+          const online = isScreenOnline(entry, Date.now());
+          const accent = colorFromName(name);
+          return (
+            <StampShell key={name} variant="card" bleed={false}>
+              <div
+                className="space-y-4 p-4"
+                style={{
+                  borderLeft: `4px solid ${accent}`,
+                  background: `color-mix(in srgb, ${accent} 8%, var(--color-surface))`,
+                }}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div
+                      className="font-mono text-base font-bold"
+                      style={{ color: accent }}
+                    >
+                      {name}
+                    </div>
+                    <div className="caption-mono text-ink-faint">
+                      {online ? 'online' : 'offline'} ·{' '}
+                      {Object.keys(entry.sessions).length} session(s)
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    <Pill
+                      size="xs"
+                      onClick={() => void identify(name)}
+                      disabled={!online}
+                    >
+                      Identify
+                    </Pill>
+                    <Pill size="xs" onClick={() => void deleteScreen(name)}>
+                      Delete
+                    </Pill>
+                    <Pill
+                      size="xs"
+                      href={`/demo/dot/display?screenName=${encodeURIComponent(name)}`}
+                    >
+                      Open display ↗
+                    </Pill>
+                  </div>
+                </div>
+                <DotPoseEditor
+                  screenName={name}
+                  pose={entry.pose}
+                  accentColor={accent}
+                  embedded
+                />
+              </div>
+            </StampShell>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          className="rounded border-2 border-ink bg-paper px-3 py-1 font-mono text-sm"
+          placeholder="screen name"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          disabled={atScreenLimit}
+        />
+        <Pill
+          size="xs"
+          active
+          onClick={() => void registerScreen()}
+          disabled={atScreenLimit}
+        >
+          Register screen
+        </Pill>
+        <span className="caption-mono text-ink-faint">
+          {names.length}/{DOT_MAX_SCREENS} screens
+        </span>
+      </div>
+    </div>
+  );
+}

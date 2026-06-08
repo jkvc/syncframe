@@ -4,8 +4,8 @@ import { SpatialServer } from '@syncframe/spatial/server';
 import { getRedis, createSubscriber } from '@/lib/redis';
 import { buildRingInitialMeta } from './ring-initial-meta';
 
-/** Isolated namespace — separate from the dot spatial demo room. */
-export const RING_NAMESPACE = 'spatial-ring';
+/** Ring demo SyncServer namespace — isolated from the dot room. */
+export const RING_NAMESPACE = 'ring-demo';
 
 const globalForRing = globalThis as typeof globalThis & {
   __ringSyncServer?: SyncServer;

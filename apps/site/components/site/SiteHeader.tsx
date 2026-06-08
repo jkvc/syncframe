@@ -12,9 +12,9 @@ const DOC_ITEMS = [
 ] as const;
 
 const DEMO_ITEMS = [
-  { href: "/demo/core", label: "timer" },
-  { href: "/demo/spatial", label: "dot" },
-  { href: "/demo/spatial/ring", label: "color ring" },
+  { href: "/demo/timer", label: "timer" },
+  { href: "/demo/dot", label: "dot" },
+  { href: "/demo/ring", label: "color ring" },
 ] as const;
 
 export default function SiteHeader() {

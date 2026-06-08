@@ -44,7 +44,7 @@ The Redis-backed `SyncStore` and `SyncTransport` implementations live in their o
 
 ## How they compose
 
-`apps/site/lib/sync.ts` wires a single global `SyncServer` to the Redis adapter:
+`apps/site/lib/timer-server.ts` wires a single global `SyncServer` to the Redis adapter:
 
 ```typescript
 import { SyncServer } from '@syncframe/core/server';
@@ -61,7 +61,7 @@ When `spatial` becomes real, it will express screens/poses as more core anchors/
 ## What this changed in the repo
 
 - Added `packages/core/src/server-entry.ts`, `packages/core/src/react-entry.ts`; rewrote `src/index.ts` to compose them; added the `exports` map.
-- Migrated every consumer off deep `@syncframe/core/src/...` imports onto `/server` or `/react` (redis package + tests, `lib/sync.ts`, `lib/timer.ts`, the timer client component).
+- Migrated every consumer off deep `@syncframe/core/src/...` imports onto `/server` or `/react` (redis package + tests, `lib/timer-server.ts`, `lib/timer.ts`, the timer client component).
 - Added `@syncframe/redis` to `transpilePackages` in `apps/site/next.config.ts`.
 - Updated `README.md` examples to the new entry points.
 
