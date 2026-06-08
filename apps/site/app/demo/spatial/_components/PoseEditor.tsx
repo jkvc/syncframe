@@ -9,9 +9,18 @@ import { SPATIAL_API_BASE } from '@/lib/spatial-config';
 interface PoseEditorProps {
   screenName: string;
   pose: ScreenPose;
+  /** Matches map overlay stroke — used for embedded card accent. */
+  accentColor?: string;
+  /** Inline row inside a screen card — no outer shell or title. */
+  embedded?: boolean;
 }
 
-export default function PoseEditor({ screenName, pose }: PoseEditorProps) {
+export default function PoseEditor({
+  screenName,
+  pose,
+  accentColor,
+  embedded = false,
+}: PoseEditorProps) {
   const [draft, setDraft] = useState(pose);
   const [pending, setPending] = useState(false);
 
@@ -33,7 +42,7 @@ export default function PoseEditor({ screenName, pose }: PoseEditorProps) {
   };
 
   const field = (key: keyof ScreenPose, label: string) => (
-    <label className="flex flex-col gap-1">
+    <label className="flex min-w-[5.5rem] flex-1 flex-col gap-1">
       <span className="caption-mono text-ink-faint">{label}</span>
       <input
         type="number"
@@ -46,21 +55,32 @@ export default function PoseEditor({ screenName, pose }: PoseEditorProps) {
     </label>
   );
 
+  const fields = (
+    <div className="flex flex-wrap items-end gap-3">
+      {field('worldX', 'worldX')}
+      {field('worldY', 'worldY')}
+      {field('worldWidth', 'width')}
+      {field('worldHeight', 'height')}
+      <Pill onClick={() => void save()} disabled={pending} size="xs" active>
+        Save pose
+      </Pill>
+    </div>
+  );
+
+  if (embedded) {
+    return fields;
+  }
+
   return (
     <StampShell variant="card" bleed={false}>
       <div className="space-y-3 p-4">
-        <h3 className="font-sans text-sm font-bold uppercase tracking-wide text-ink">
+        <h3
+          className="font-sans text-sm font-bold uppercase tracking-wide"
+          style={accentColor ? { color: accentColor } : undefined}
+        >
           Pose — {screenName}
         </h3>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {field('worldX', 'worldX')}
-          {field('worldY', 'worldY')}
-          {field('worldWidth', 'width')}
-          {field('worldHeight', 'height')}
-        </div>
-        <Pill onClick={() => void save()} disabled={pending} size="xs" active>
-          Save pose
-        </Pill>
+        {fields}
       </div>
     </StampShell>
   );
