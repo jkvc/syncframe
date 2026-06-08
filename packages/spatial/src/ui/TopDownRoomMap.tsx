@@ -41,7 +41,7 @@ export default function TopDownRoomMap({
   };
 
   return (
-    <div className="inline-block w-full max-w-3xl rounded bg-black">
+    <div className="inline-block w-full max-w-3xl overflow-hidden rounded">
       <svg
         viewBox={`0 0 ${worldWidth} ${worldHeight}`}
         className="block h-auto w-full"
@@ -50,23 +50,6 @@ export default function TopDownRoomMap({
         role="img"
         aria-label={`Top-down map of world ${worldWidth} by ${worldHeight}`}
       >
-        <rect
-          x={0}
-          y={0}
-          width={worldWidth}
-          height={worldHeight}
-          fill="#000"
-        />
-        <rect
-          x={0}
-          y={0}
-          width={worldWidth}
-          height={worldHeight}
-          fill="rgba(255,255,255,0.04)"
-          stroke="rgba(255,255,255,0.30)"
-          strokeWidth={2}
-          vectorEffect="non-scaling-stroke"
-        />
         <MapView {...previewCtx} />
 
         {names.map((name) => (

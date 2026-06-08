@@ -112,6 +112,12 @@ describe('pruneStaleSessions', () => {
   });
 });
 
+describe('defaultSpatialMeta', () => {
+  it('omits contentLayerId — consumers set it via SpatialServer.initialMeta', () => {
+    expect(defaultSpatialMeta().contentLayerId).toBeUndefined();
+  });
+});
+
 describe('setRenderMode', () => {
   it('toggles render mode', () => {
     const next = setRenderMode(defaultSpatialMeta(), 'content');

@@ -3,7 +3,11 @@ import type { CoreSnapshot } from '@syncframe/core/server';
 import type { ServerClock } from '@syncframe/core/react';
 import type { ScreenPose, SpatialMeta } from '../types';
 
-/** Evaluated world-space frame — data only; rendering is consumer-owned. */
+/**
+ * Rect-shaped world primitive — optional convenience for evaluateFrame.
+ * Complex layers may ignore WorldFrame and draw from anchors in MapView/Display.
+ * Background, motion, and non-rect geometry are entirely consumer-owned.
+ */
 export interface WorldShape {
   x: number;
   y: number;
@@ -40,9 +44,9 @@ export interface ContentLayerDisplayProps extends WorldEvalContext {
 /**
  * Content layer module.
  *
- * - `evaluateFrame` — world-space data (what exists where, with what color/opacity).
- * - `MapView` / `Display` — consumer-owned renderers for the two projections.
- *   Use `projectWorldFrameToViewport` from the lib for display coordinate math.
+ * - `evaluateFrame` — optional rect-shaped world data; consumers may use or bypass it.
+ * - `MapView` / `Display` — consumer-owned renderers (background, shapes, motion).
+ *   `projectWorldFrameToViewport` is optional coordinate math for rect layers.
  */
 export interface SpatialContentLayer {
   id: string;

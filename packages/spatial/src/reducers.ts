@@ -24,7 +24,6 @@ export function defaultSpatialMeta(): SpatialMeta {
   return {
     worldBbox: { width: DEFAULT_WORLD_WIDTH, height: DEFAULT_WORLD_HEIGHT },
     renderMode: 'calibration',
-    contentLayerId: 'dot',
     screens: {},
   };
 }

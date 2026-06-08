@@ -9,3 +9,6 @@ export const SPATIAL_API_BASE = '/api/spatial';
 
 /** Demo override — library default is 5. */
 export const SPATIAL_MAX_SCREENS = 4;
+
+/** Active content layer for this demo room — set via SpatialServer.initialMeta. */
+export const SPATIAL_CONTENT_LAYER_ID = 'dot';

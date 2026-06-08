@@ -67,7 +67,7 @@ pnpm add @syncframe/core @syncframe/redis`}
           code={`interface SpatialMeta {
   worldBbox: { width: number; height: number };  // default 1920×1080
   renderMode: 'calibration' | 'content';
-  contentLayerId?: string;
+  contentLayerId?: string;  // consumer sets via SpatialServer.initialMeta (not a lib default)
   screens: Record<string, ScreenEntry>;
   identifyTrigger?: { screenName: string; at: number } | null; // often merged at SSE build
 }

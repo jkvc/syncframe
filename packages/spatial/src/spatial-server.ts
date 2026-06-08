@@ -17,6 +17,8 @@ export interface SpatialServerOptions {
   metaKey?: string;
   /** Max registered screens; default {@link DEFAULT_MAX_SCREENS}. */
   maxScreens?: number;
+  /** Merged into {@link defaultSpatialMeta} on first {@link ensureInitialized}. */
+  initialMeta?: Partial<SpatialMeta>;
 }
 
 export type RegisterScreenResult =
@@ -27,11 +29,13 @@ export class SpatialServer {
   readonly sync: SyncServer;
   readonly metaKey: string;
   readonly maxScreens: number;
+  readonly initialMeta: Partial<SpatialMeta>;
 
   constructor(options: SpatialServerOptions) {
     this.sync = options.sync;
     this.metaKey = options.metaKey ?? 'spatial';
     this.maxScreens = options.maxScreens ?? DEFAULT_MAX_SCREENS;
+    this.initialMeta = options.initialMeta ?? {};
   }
 
   async getMeta(): Promise<SpatialMeta> {
@@ -55,7 +59,7 @@ export class SpatialServer {
   async ensureInitialized(): Promise<SpatialMeta> {
     const full = await this.sync.getMeta();
     if (full[this.metaKey]) return this.getMeta();
-    const initial = defaultSpatialMeta();
+    const initial = { ...defaultSpatialMeta(), ...this.initialMeta };
     await this.sync.patchMeta({ [this.metaKey]: initial });
     return initial;
   }

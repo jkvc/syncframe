@@ -2,7 +2,7 @@ import { SyncServer } from '@syncframe/core/server';
 import { RedisStore, RedisTransport } from '@syncframe/redis';
 import { SpatialServer } from '@syncframe/spatial/server';
 import { getRedis, createSubscriber } from '@/lib/redis';
-import { SPATIAL_MAX_SCREENS } from '@/lib/spatial-config';
+import { SPATIAL_CONTENT_LAYER_ID, SPATIAL_MAX_SCREENS } from '@/lib/spatial-config';
 
 /** Spatial demo namespace — bound at SyncServer construction, not exposed to clients. */
 export const SPATIAL_NAMESPACE = 'spatial-demo';
@@ -30,5 +30,6 @@ export function getSpatialServer(): SpatialServer {
   return (globalForSpatial.__spatialServer ??= new SpatialServer({
     sync: getSpatialSyncServer(),
     maxScreens: SPATIAL_MAX_SCREENS,
+    initialMeta: { contentLayerId: SPATIAL_CONTENT_LAYER_ID },
   }));
 }

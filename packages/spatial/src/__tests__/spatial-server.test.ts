@@ -30,6 +30,20 @@ describe('SpatialServer', () => {
     const meta = await spatial.getMeta();
     expect(meta.worldBbox.width).toBe(defaultSpatialMeta().worldBbox.width);
     expect(meta.renderMode).toBe('calibration');
+    expect(meta.contentLayerId).toBeUndefined();
+  });
+
+  it('ensureInitialized merges initialMeta from options', async () => {
+    const spatial = new SpatialServer({
+      sync: new SyncServer({
+        store: new InMemoryStore(),
+        transport: new EventEmitterTransport(),
+        namespace: 'init-meta-test',
+      }),
+      initialMeta: { contentLayerId: 'dot' },
+    });
+    const meta = await spatial.ensureInitialized();
+    expect(meta.contentLayerId).toBe('dot');
   });
 
   it('registerScreen enforces maxScreens', async () => {
