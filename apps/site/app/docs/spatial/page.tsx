@@ -15,7 +15,7 @@ export default function SpatialDocsPage() {
           Spatial
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink-muted">
-          Multi-display calibration on top of <code className="font-mono text-sm">@syncframe/core</code>. Register screens, assign each a world-coordinate viewport, track presence, and render shared content cropped per display. Optional <code className="font-mono text-sm">/ui</code> ships display chrome; content layers (dot, pano) stay in your app.
+          Multi-display calibration on top of <code className="font-mono text-sm">@syncframe/core</code>. Register screens, assign each a world-coordinate viewport, track presence, and render shared content cropped per display. Optional <code className="font-mono text-sm">/ui</code> ships display chrome; content layers stay in your app. Live examples: the <a href="/demo/dot" className="text-hot underline">dot demo</a> (bouncing circle) and <a href="/demo/ring" className="text-hot underline">color ring demo</a> (spinning petals across four quadrants).
         </p>
       </PageStampHeader>
 
@@ -92,7 +92,7 @@ interface ScreenPose {
 
       <DocSection title="Wire SpatialServer">
         <p>
-          Bind one <code className="font-mono text-sm">SyncServer</code> namespace for your spatial app (the site demo uses <code className="font-mono text-sm">dot-demo</code>). <code className="font-mono text-sm">SpatialServer</code> read-modify-writes the <code className="font-mono text-sm">spatial</code> key under that server&apos;s meta.
+          Bind one <code className="font-mono text-sm">SyncServer</code> namespace per spatial app. The site runs two isolated rooms: <code className="font-mono text-sm">dot-demo</code> (<a href="/demo/dot" className="text-hot underline">dot demo</a>) and <code className="font-mono text-sm">ring-demo</code> (<a href="/demo/ring" className="text-hot underline">color ring demo</a>). <code className="font-mono text-sm">SpatialServer</code> read-modify-writes the <code className="font-mono text-sm">spatial</code> key under that server&apos;s meta.
         </p>
         <CodeBlock
           code={`import { SyncServer } from '@syncframe/core/server';
@@ -199,7 +199,7 @@ const dotAnchor = useAnchor('dot', '/api/dot/stream');`}
 
       <DocSection title="API routes (consumer pattern)">
         <p>
-          The site demo implements thin Next.js routes under <code className="font-mono text-sm">/api/dot/*</code>. Each mutating route calls <code className="font-mono text-sm">spatial.apply(...)</code> then <code className="font-mono text-sm">spatial.publish()</code>. The stream route merges identify triggers and prunes stale sessions before fan-out.
+          Each site demo implements thin Next.js routes under its own prefix — <code className="font-mono text-sm">/api/dot/*</code> and <code className="font-mono text-sm">/api/ring/*</code>. Each mutating route calls <code className="font-mono text-sm">spatial.apply(...)</code> then <code className="font-mono text-sm">spatial.publish()</code>. The stream route merges identify triggers and prunes stale sessions before fan-out.
         </p>
         <RefList>
           <RefRow label="GET /stream" note="SSE CoreSnapshot; : open preamble; ensureAnchor for content channel" />
@@ -209,7 +209,8 @@ const dotAnchor = useAnchor('dot', '/api/dot/stream');`}
           <RefRow label="POST /heartbeat" note="Upserts session on screen entry" />
           <RefRow label="POST /render-mode" note="{ mode: 'calibration' | 'content' }" />
           <RefRow label="POST /identify" note="{ name } — transient trigger (demo: separate Redis key, 5s TTL)" />
-          <RefRow label="POST /control" note="{ action: 'start' | 'pause' | 'reset' } — consumer-owned anchor" />
+          <RefRow label="POST /control" note="Dot only — { action: 'start' | 'pause' | 'reset' } on the dot anchor" />
+          <RefRow label="POST /spin" note="Ring only — { action: 'start' | 'pause' } on the ring-spin scalar anchor" />
         </RefList>
       </DocSection>
 
@@ -244,7 +245,7 @@ interface SpatialContentLayer {
 import { projectWorldFrameToViewport } from '@syncframe/spatial/ui';`}
         />
         <p>
-          WYSIWYG: map and wall share the same <code className="font-mono text-sm">evaluateFrame</code> and the same paint helpers. A scrolling pano returns one wide image rect with scroll offset in <code className="font-mono text-sm">x</code>; projection crops it per screen. The dot demo uses solid rects in <code className="font-mono text-sm">lib/dot-render.tsx</code>.
+          WYSIWYG: map and wall share the same <code className="font-mono text-sm">evaluateFrame</code> and the same paint helpers. A scrolling pano returns one wide image rect with scroll offset in <code className="font-mono text-sm">x</code>; projection crops it per screen. The <a href="/demo/dot" className="text-hot underline">dot demo</a> uses solid rects in <code className="font-mono text-sm">lib/dot-render.tsx</code>; the <a href="/demo/ring" className="text-hot underline">color ring demo</a> places twelve outlined petals in <code className="font-mono text-sm">lib/ring-render.tsx</code>.
         </p>
       </DocSection>
 
@@ -284,7 +285,7 @@ import { dotLayer } from '@/lib/dot-layer';
   contentLayer={dotLayer}
   presentation
 />`}
-          note="Site demo: /demo/dot/display?screenName=left. Registration is app glue; rendering is entirely ChromeFreeDisplay + contentLayer."
+          note="Dot: /demo/dot/display?screenName=left. Ring: /demo/ring/display?screenName=nw. Registration is app glue; rendering is entirely ChromeFreeDisplay + contentLayer."
         />
       </DocSection>
 
@@ -304,7 +305,7 @@ import { dotLayer } from '@/lib/dot-layer';
       <DocSection title="Calibration workflow">
         <StepList>
           <StepItem number="01">
-            Open the display URL on each monitor: <code className="font-mono text-sm">/demo/dot/display?screenName=wall-left</code>. The page auto-registers the name.
+            Open the display URL on each monitor — e.g. <code className="font-mono text-sm">/demo/dot/display?screenName=wall-left</code> or the ring&apos;s fixed quadrants <code className="font-mono text-sm">/demo/ring/display?screenName=nw</code>. The page auto-registers the name.
           </StepItem>
           <StepItem number="02">
             On the operator page, confirm screens show online (heartbeat). Edit poses in world coordinates — each pose is the world rectangle that display maps to its viewport.
@@ -316,12 +317,18 @@ import { dotLayer } from '@/lib/dot-layer';
             Use <strong>identify</strong> to flash a screen red when you need to match a physical monitor to a name.
           </StepItem>
           <StepItem number="05">
-            Switch to <strong>content</strong> mode and start the dot (or your layer). Motion is evaluated on every client at <code className="font-mono text-sm">serverNow()</code>; only the pose crop differs per display.
+            Switch to <strong>content</strong> mode and start motion (dot control, ring spin, or your layer). Motion is evaluated on every client at <code className="font-mono text-sm">serverNow()</code>; only the pose crop differs per display.
           </StepItem>
         </StepList>
       </DocSection>
 
-      <DocSection title="Dot demo (reference consumer)">
+      <DocSection title="Site demos">
+        <p>
+          Two live consumers share the same spatial stack with separate Redis namespaces and content layers. Use the dot demo for free-form screen registration and bouncing motion; use the color ring demo for a fixed four-quadrant layout and scalar spin.
+        </p>
+      </DocSection>
+
+      <DocSection title="Dot demo">
         <p>
           The <a href="/demo/dot" className="text-hot underline">dot demo</a> is a bouncing-circle layer on a <code className="font-mono text-sm">dot</code> anchor channel. Motion lives in <code className="font-mono text-sm">lib/dot.ts</code>; the <code className="font-mono text-sm">SpatialContentLayer</code> module is <code className="font-mono text-sm">lib/dot-layer.tsx</code> (shared <code className="font-mono text-sm">evaluateFrame</code> for map + display).
         </p>
@@ -336,6 +343,25 @@ export const dotLayer: SpatialContentLayer = {
 
 // Motion math (no React): apps/site/lib/dot.ts`}
           note="useDotContentLayer() wires the layer for operator + display. Display omits debug labels in presentation mode."
+        />
+      </DocSection>
+
+      <DocSection title="Color ring demo">
+        <p>
+          The <a href="/demo/ring" className="text-hot underline">color ring demo</a> is a second spatial room (<code className="font-mono text-sm">ring-demo</code>) with a 500×500 white world, four pre-seeded quadrant screens (<code className="font-mono text-sm">nw</code>, <code className="font-mono text-sm">ne</code>, <code className="font-mono text-sm">sw</code>, <code className="font-mono text-sm">se</code>), and a scalar <code className="font-mono text-sm">ring-spin</code> anchor driving CCW rotation. Motion lives in <code className="font-mono text-sm">lib/ring.ts</code>; the content layer is <code className="font-mono text-sm">lib/ring-layer.tsx</code> (<code className="font-mono text-sm">useRingContentLayer()</code> adds client-side spin smoothing).
+        </p>
+        <CodeBlock
+          code={`// ring-layer.tsx — twelve petals from one evaluateFrame
+export const ringLayer: SpatialContentLayer = {
+  id: 'ring',
+  evaluateFrame: evaluateRingFrame,
+  MapView: RingMapView,     // lib/ring-render.tsx
+  Display: RingViewport,
+};
+
+// Operator: POST /api/ring/spin { action: 'start' | 'pause' }
+// Displays: /demo/ring/display?screenName=nw`}
+          note="Identify-only operator — poses are fixed at initial meta. Separate from dot-demo; no shared Redis state."
         />
       </DocSection>
 
@@ -389,6 +415,9 @@ export const dotLayer: SpatialContentLayer = {
         <ActionRow>
           <Pill href="/demo/dot" active size="xs">
             Dot demo
+          </Pill>
+          <Pill href="/demo/ring" size="xs">
+            Color ring demo
           </Pill>
           <Pill href="/docs/core" size="xs">
             Core docs
