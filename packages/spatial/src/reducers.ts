@@ -3,6 +3,7 @@
  */
 
 import {
+  DEFAULT_MAX_SCREENS,
   DEFAULT_POSE,
   DEFAULT_WORLD_HEIGHT,
   DEFAULT_WORLD_WIDTH,
@@ -74,8 +75,19 @@ export function pruneStaleSessions(meta: SpatialMeta, nowMs: number): SpatialMet
   return { ...meta, screens };
 }
 
-export function ensureScreen(meta: SpatialMeta, name: string): SpatialMeta {
+export type EnsureScreenResult = SpatialMeta | 'limit_reached';
+
+export function screenCount(meta: SpatialMeta): number {
+  return Object.keys(meta.screens).length;
+}
+
+export function ensureScreen(
+  meta: SpatialMeta,
+  name: string,
+  maxScreens: number = DEFAULT_MAX_SCREENS,
+): EnsureScreenResult {
   if (meta.screens[name]) return meta;
+  if (screenCount(meta) >= maxScreens) return 'limit_reached';
   const now = new Date().toISOString();
   return {
     ...meta,

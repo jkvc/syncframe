@@ -9,6 +9,7 @@ import StampShell from '@/components/ui/StampShell';
 import {
   SPATIAL_API_BASE,
   SPATIAL_STREAM_ENDPOINT,
+  SPATIAL_MAX_SCREENS,
   DOT_CHANNEL_ID,
 } from '@/lib/spatial-config';
 import type { DotAnchor } from '@/lib/dot';
@@ -63,14 +64,17 @@ export function SpatialOperator() {
       body: JSON.stringify({ mode }),
     });
 
+  const atScreenLimit = names.length >= SPATIAL_MAX_SCREENS;
+
   const registerScreen = async () => {
     const name = newName.trim();
-    if (!name) return;
-    await fetch(`${SPATIAL_API_BASE}/screens/register`, {
+    if (!name || atScreenLimit) return;
+    const res = await fetch(`${SPATIAL_API_BASE}/screens/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name }),
     });
+    if (!res.ok) return;
     setNewName('');
     setSelected(name);
   };
@@ -126,16 +130,25 @@ export function SpatialOperator() {
         </div>
       </StampShell>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <input
           className="rounded border-2 border-ink bg-paper px-3 py-1 font-mono text-sm"
           placeholder="screen name"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
+          disabled={atScreenLimit}
         />
-        <Pill size="xs" active onClick={() => void registerScreen()}>
+        <Pill
+          size="xs"
+          active
+          onClick={() => void registerScreen()}
+          disabled={atScreenLimit}
+        >
           Register screen
         </Pill>
+        <span className="caption-mono text-ink-faint">
+          {names.length}/{SPATIAL_MAX_SCREENS} screens
+        </span>
       </div>
 
       <StampShell variant="card" bleed={false} className="p-3">

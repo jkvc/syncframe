@@ -54,6 +54,9 @@ export interface SpatialMeta {
 export const DEFAULT_WORLD_WIDTH = 1920;
 export const DEFAULT_WORLD_HEIGHT = 1080;
 
+/** Default cap on registered screen names per spatial namespace. */
+export const DEFAULT_MAX_SCREENS = 5;
+
 export const DEFAULT_POSE: ScreenPose = {
   worldX: 0,
   worldY: 0,

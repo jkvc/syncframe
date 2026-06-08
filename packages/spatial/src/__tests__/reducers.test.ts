@@ -14,19 +14,33 @@ import {
 } from '../reducers';
 import { DEFAULT_POSE } from '../types';
 
+function asMeta(result: ReturnType<typeof ensureScreen>) {
+  if (result === 'limit_reached') throw new Error('expected meta');
+  return result;
+}
+
 describe('ensureScreen', () => {
   it('creates a screen with default pose at origin', () => {
-    const meta = ensureScreen(defaultSpatialMeta(), 'desk-left');
+    const meta = asMeta(ensureScreen(defaultSpatialMeta(), 'desk-left'));
     expect(meta.screens['desk-left']).toBeDefined();
     expect(meta.screens['desk-left']!.pose).toEqual(DEFAULT_POSE);
   });
 
   it('is idempotent', () => {
-    const once = ensureScreen(defaultSpatialMeta(), 'desk-left');
+    const once = asMeta(ensureScreen(defaultSpatialMeta(), 'desk-left'));
     const pose = { ...DEFAULT_POSE, worldX: 50 };
     once.screens['desk-left']!.pose = pose;
-    const twice = ensureScreen(once, 'desk-left');
+    const twice = asMeta(ensureScreen(once, 'desk-left'));
     expect(twice.screens['desk-left']!.pose.worldX).toBe(50);
+  });
+
+  it('returns limit_reached when at maxScreens', () => {
+    let meta = defaultSpatialMeta();
+    for (let i = 0; i < 3; i++) {
+      meta = asMeta(ensureScreen(meta, `s${i}`, 3));
+    }
+    expect(ensureScreen(meta, 's-new', 3)).toBe('limit_reached');
+    expect(asMeta(ensureScreen(meta, 's0', 3))).toBe(meta);
   });
 });
 
@@ -36,7 +50,7 @@ describe('updatePose', () => {
   });
 
   it('updates pose for existing screen', () => {
-    const meta = ensureScreen(defaultSpatialMeta(), 'a');
+    const meta = asMeta(ensureScreen(defaultSpatialMeta(), 'a'));
     const next = updatePose(meta, 'a', { ...DEFAULT_POSE, worldX: 10 });
     expect(next!.screens['a']!.pose.worldX).toBe(10);
   });
@@ -44,7 +58,7 @@ describe('updatePose', () => {
 
 describe('deleteScreen', () => {
   it('removes screen from map', () => {
-    const meta = ensureScreen(defaultSpatialMeta(), 'a');
+    const meta = asMeta(ensureScreen(defaultSpatialMeta(), 'a'));
     const next = deleteScreen(meta, 'a');
     expect(next.screens['a']).toBeUndefined();
   });
@@ -64,7 +78,7 @@ describe('heartbeat', () => {
   });
 
   it('upserts session on existing screen', () => {
-    const meta = ensureScreen(defaultSpatialMeta(), 'a');
+    const meta = asMeta(ensureScreen(defaultSpatialMeta(), 'a'));
     const session = {
       sessionId: 's1',
       clientWidthPx: 1920,
@@ -83,7 +97,7 @@ describe('heartbeat', () => {
 
 describe('pruneStaleSessions', () => {
   it('drops sessions older than TTL', () => {
-    const meta = ensureScreen(defaultSpatialMeta(), 'a');
+    const meta = asMeta(ensureScreen(defaultSpatialMeta(), 'a'));
     const stale = new Date(Date.now() - SESSION_TTL_MS - 1000).toISOString();
     meta.screens['a']!.sessions['old'] = {
       sessionId: 'old',

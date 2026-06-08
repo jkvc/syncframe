@@ -14,7 +14,10 @@ function makeSpatialServer() {
 describe('SpatialServer', () => {
   it('deep-merges spatial meta — renderMode patch preserves screens', async () => {
     const spatial = makeSpatialServer();
-    await spatial.apply((m) => ensureScreen(m, 'desk-left'));
+    await spatial.apply((m) => {
+      const r = ensureScreen(m, 'desk-left');
+      return r === 'limit_reached' ? m : r;
+    });
     await spatial.apply((m) => setRenderMode(m, 'content'));
 
     const meta = await spatial.getMeta();
@@ -27,5 +30,22 @@ describe('SpatialServer', () => {
     const meta = await spatial.getMeta();
     expect(meta.worldBbox.width).toBe(defaultSpatialMeta().worldBbox.width);
     expect(meta.renderMode).toBe('calibration');
+  });
+
+  it('registerScreen enforces maxScreens', async () => {
+    const spatial = new SpatialServer({
+      sync: new SyncServer({
+        store: new InMemoryStore(),
+        transport: new EventEmitterTransport(),
+        namespace: 'limit-test',
+      }),
+      maxScreens: 2,
+    });
+    expect((await spatial.registerScreen('a')).ok).toBe(true);
+    expect((await spatial.registerScreen('b')).ok).toBe(true);
+    const third = await spatial.registerScreen('c');
+    expect(third.ok).toBe(false);
+    if (!third.ok) expect(third.reason).toBe('limit_reached');
+    expect((await spatial.registerScreen('a')).ok).toBe(true);
   });
 });
