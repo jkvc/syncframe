@@ -1,5 +1,6 @@
 export type {
   WorldShape,
+  WorldShapePaint,
   WorldFrame,
   WorldEvalContext,
   WorldPreviewContext,

@@ -1,10 +1,10 @@
 /**
  * Pure coordinate projection — no rendering opinions.
- * Consumers (content layers) own how projected shapes are drawn.
+ * Consumers (content layers) own how projected shapes are painted.
  */
 
 import type { ScreenPose } from '../types';
-import type { WorldFrame, WorldShape } from './content-layer';
+import type { WorldFrame, WorldShape, WorldShapePaint } from './content-layer';
 
 export interface ScreenShape {
   screenX: number;
@@ -14,7 +14,7 @@ export interface ScreenShape {
 }
 
 export interface ViewportProjectedShape extends ScreenShape {
-  fill: string;
+  paint: WorldShapePaint;
   opacity: number;
   visible: boolean;
 }
@@ -71,7 +71,7 @@ export function projectWorldFrameToViewport(
       screenY,
       screenW,
       screenH,
-      fill: shape.fill,
+      paint: shape.paint,
       opacity: shape.opacity ?? 1,
       visible: !isShapeOffViewport(
         screenX,

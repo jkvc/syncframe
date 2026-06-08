@@ -1,31 +1,81 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { ScreenPose } from '@syncframe/spatial/react';
 import {
   projectWorldFrameToViewport,
+  type ViewportProjectedShape,
   type WorldEvalContext,
   type WorldFrame,
   type WorldPreviewContext,
+  type WorldShape,
+  type WorldShapePaint,
 } from '@syncframe/spatial/ui';
 
-/** Dot demo — world-native SVG (fill only, matches presentation). */
-export function renderDotFrameAsSvg(frame: WorldFrame): ReactNode {
-  return frame.shapes.map((shape, i) => (
+function viewportPaintStyle(paint: WorldShapePaint): CSSProperties {
+  if (paint.kind === 'solid') {
+    return { background: paint.color };
+  }
+  return {
+    backgroundImage: `url(${paint.url})`,
+    backgroundSize: '100% 100%',
+    backgroundRepeat: 'no-repeat',
+  };
+}
+
+function renderWorldShapeAsSvg(shape: WorldShape, key: number): ReactNode {
+  const opacity = shape.opacity ?? 1;
+  if (shape.paint.kind === 'image') {
+    return (
+      <image
+        key={key}
+        href={shape.paint.url}
+        x={shape.x}
+        y={shape.y}
+        width={shape.width}
+        height={shape.height}
+        opacity={opacity}
+        preserveAspectRatio="none"
+      />
+    );
+  }
+  return (
     <rect
-      key={i}
+      key={key}
       x={shape.x}
       y={shape.y}
       width={shape.width}
       height={shape.height}
-      fill={shape.fill}
-      opacity={shape.opacity ?? 1}
+      fill={shape.paint.color}
+      opacity={opacity}
     />
-  ));
+  );
 }
 
-/** Dot demo — pose-cropped viewport divs. */
+function renderProjectedShapeAsDiv(shape: ViewportProjectedShape, key: number): ReactNode {
+  if (!shape.visible) return null;
+  return (
+    <div
+      key={key}
+      className="absolute left-0 top-0 will-change-transform"
+      style={{
+        transform: `translate3d(${shape.screenX}px, ${shape.screenY}px, 0)`,
+        width: shape.screenW,
+        height: shape.screenH,
+        opacity: shape.opacity,
+        ...viewportPaintStyle(shape.paint),
+      }}
+    />
+  );
+}
+
+/** Dot demo — world-native SVG at uniform world scale. */
+export function renderDotFrameAsSvg(frame: WorldFrame): ReactNode {
+  return frame.shapes.map((shape, i) => renderWorldShapeAsSvg(shape, i));
+}
+
+/** Dot demo — pose-cropped viewport divs via lib projection. */
 export function renderDotFrameAsViewport(
   frame: WorldFrame,
   pose: ScreenPose,
@@ -33,20 +83,7 @@ export function renderDotFrameAsViewport(
   viewportHeight: number,
 ): ReactNode {
   return projectWorldFrameToViewport(frame, pose, viewportWidth, viewportHeight).map(
-    (shape, i) =>
-      shape.visible ? (
-        <div
-          key={i}
-          className="absolute left-0 top-0 will-change-transform"
-          style={{
-            transform: `translate3d(${shape.screenX}px, ${shape.screenY}px, 0)`,
-            width: shape.screenW,
-            height: shape.screenH,
-            background: shape.fill,
-            opacity: shape.opacity,
-          }}
-        />
-      ) : null,
+    (shape, i) => renderProjectedShapeAsDiv(shape, i),
   );
 }
 

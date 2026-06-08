@@ -54,7 +54,12 @@ describe('evaluateDotFrame', () => {
     expect(dot).toBeDefined();
     expect(dot!.width).toBe(DOT_SQUARE_SIZE);
     expect(dot!.height).toBe(DOT_SQUARE_SIZE);
-    expect(bg!.fill).toBe(complementColor(dot!.fill));
+    expect(bg!.paint).toEqual({
+      kind: 'solid',
+      color: complementColor(
+        dot!.paint.kind === 'solid' ? dot!.paint.color : '#000000',
+      ),
+    });
     expect(dot!.x).toBeGreaterThanOrEqual(0);
     expect(dot!.y).toBeGreaterThanOrEqual(0);
   });

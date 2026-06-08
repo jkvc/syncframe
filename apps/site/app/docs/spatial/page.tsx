@@ -215,14 +215,24 @@ const dotAnchor = useAnchor('dot', '/api/spatial/stream');`}
 
       <DocSection title="Content layer contract">
         <p>
-          Each content module exports a <code className="font-mono text-sm">SpatialContentLayer</code>: <code className="font-mono text-sm">evaluateFrame</code> returns world-space <strong>data</strong> (<code className="font-mono text-sm">WorldFrame</code>); <code className="font-mono text-sm">MapView</code> and <code className="font-mono text-sm">Display</code> are consumer-owned renderers. The spatial package only supplies coordinate projection helpers.
+          Each content module exports a <code className="font-mono text-sm">SpatialContentLayer</code>. <code className="font-mono text-sm">evaluateFrame</code> is required: it returns world-space rects (<code className="font-mono text-sm">WorldFrame</code>) with motion baked into <code className="font-mono text-sm">x</code>/<code className="font-mono text-sm">y</code>. <code className="font-mono text-sm">MapView</code> and <code className="font-mono text-sm">Display</code> paint those rects; the spatial package supplies pose-crop projection only.
         </p>
         <ul className="prose-doc list-disc space-y-2 pl-5">
           <li><strong>Top-down map</strong> — <code className="font-mono text-sm">TopDownRoomMap</code> hosts <code className="font-mono text-sm">MapView</code> at <code className="font-mono text-sm">(0,0)</code> in <code className="font-mono text-sm">worldW×worldH</code> with uniform scale. Screen pose rects are overlaid on top.</li>
-          <li><strong>Wall display</strong> — <code className="font-mono text-sm">Display</code> crops to the screen pose bbox and stretches to fill the window (use <code className="font-mono text-sm">projectWorldFrameToViewport</code> for pixel math).</li>
+          <li><strong>Wall display</strong> — <code className="font-mono text-sm">Display</code> calls <code className="font-mono text-sm">projectWorldFrameToViewport</code> to crop each rect to the screen pose bbox and stretch into viewport pixels.</li>
         </ul>
         <CodeBlock
-          code={`interface SpatialContentLayer {
+          code={`type WorldShapePaint =
+  | { kind: 'solid'; color: string }
+  | { kind: 'image'; url: string };
+
+interface WorldShape {
+  x: number; y: number; width: number; height: number;
+  paint: WorldShapePaint;
+  label?: string; opacity?: number;
+}
+
+interface SpatialContentLayer {
   id: string;
   label: string;
   evaluateFrame: (ctx: WorldEvalContext) => WorldFrame;
@@ -234,7 +244,7 @@ const dotAnchor = useAnchor('dot', '/api/spatial/stream');`}
 import { projectWorldFrameToViewport } from '@syncframe/spatial/ui';`}
         />
         <p>
-          WYSIWYG: map and wall use the same <code className="font-mono text-sm">evaluateFrame</code> and the same consumer renderer styles. A pano layer might use canvas in both slots; the dot demo uses <code className="font-mono text-sm">lib/dot-render.tsx</code>.
+          WYSIWYG: map and wall share the same <code className="font-mono text-sm">evaluateFrame</code> and the same paint helpers. A scrolling pano returns one wide image rect with scroll offset in <code className="font-mono text-sm">x</code>; projection crops it per screen. The dot demo uses solid rects in <code className="font-mono text-sm">lib/dot-render.tsx</code>.
         </p>
       </DocSection>
 
@@ -320,7 +330,7 @@ import { dotLayer } from '@/lib/dot-layer';
 export const dotLayer: SpatialContentLayer = {
   id: 'dot',
   evaluateFrame: evaluateDotFrame,
-  MapView: DotMapView,      // lib/dot-render.tsx — SVG, fill-only
+  MapView: DotMapView,      // lib/dot-render.tsx — solid + image paint
   Display: DotDisplay,      // DotViewport + offset decay
 };
 

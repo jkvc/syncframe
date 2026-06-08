@@ -21,7 +21,7 @@ describe('projectWorldFrameToViewport', () => {
             y: 350,
             width: 40,
             height: 30,
-            fill: '#ff0000',
+            paint: { kind: 'solid', color: '#ff0000' },
             opacity: 0.8,
           },
         ],
@@ -36,16 +36,37 @@ describe('projectWorldFrameToViewport', () => {
       screenY: 300,
       screenW: 80,
       screenH: 60,
-      fill: '#ff0000',
+      paint: { kind: 'solid', color: '#ff0000' },
       opacity: 0.8,
       visible: true,
     });
   });
 
+  it('passes image paint through projection', () => {
+    const projected = projectWorldFrameToViewport(
+      {
+        shapes: [
+          {
+            x: 0,
+            y: 0,
+            width: 6000,
+            height: 1080,
+            paint: { kind: 'image', url: '/pano.jpg' },
+          },
+        ],
+      },
+      pose,
+      800,
+      600,
+    );
+    expect(projected[0]!.paint).toEqual({ kind: 'image', url: '/pano.jpg' });
+    expect(projected[0]!.visible).toBe(true);
+  });
+
   it('marks shapes fully outside the viewport as not visible', () => {
     const projected = projectWorldFrameToViewport(
       {
-        shapes: [{ x: 900, y: 900, width: 10, height: 10, fill: '#000' }],
+        shapes: [{ x: 900, y: 900, width: 10, height: 10, paint: { kind: 'solid', color: '#000' } }],
       },
       pose,
       800,
