@@ -26,7 +26,6 @@ export const DOT_COLORS = [
 const OFFSET_DECAY_TC_MS = 250;
 const OFFSET_SNAP_THRESHOLD_PX = 300;
 const RIPPLE_DURATION_MS = 900;
-const RIPPLE_MAX_RADIUS = 420;
 
 export interface Ripple {
   cx: number;
@@ -57,13 +56,33 @@ export function complementColor(hex: string): string {
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
 }
 
-function rippleShapes(ripples: Ripple[], serverNow: number): WorldShape[] {
+/** Farthest world corner from center — ring reaches the world edge at t = 1. */
+export function maxRippleRadius(
+  cx: number,
+  cy: number,
+  worldW: number,
+  worldH: number,
+): number {
+  return Math.max(
+    Math.hypot(cx, cy),
+    Math.hypot(worldW - cx, cy),
+    Math.hypot(cx, worldH - cy),
+    Math.hypot(worldW - cx, worldH - cy),
+  );
+}
+
+function rippleShapes(
+  ripples: Ripple[],
+  serverNow: number,
+  worldW: number,
+  worldH: number,
+): WorldShape[] {
   const out: WorldShape[] = [];
   for (const ripple of ripples) {
     const elapsed = serverNow - ripple.atServerMs;
     if (elapsed < 0 || elapsed > RIPPLE_DURATION_MS) continue;
     const t = elapsed / RIPPLE_DURATION_MS;
-    const radius = t * RIPPLE_MAX_RADIUS;
+    const radius = t * maxRippleRadius(ripple.cx, ripple.cy, worldW, worldH);
     const opacity = (1 - t) * 0.55;
     out.push({
       x: ripple.cx - radius,
@@ -145,7 +164,7 @@ export function evaluateDotFrame(
         opacity: 1,
         label: 'bg',
       },
-      ...rippleShapes(effects.ripples, serverNow),
+      ...rippleShapes(effects.ripples, serverNow, worldW, worldH),
       {
         x: pos.x,
         y: pos.y,

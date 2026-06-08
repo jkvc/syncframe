@@ -323,7 +323,7 @@ import { dotLayer } from '@/lib/dot-layer';
 
       <DocSection title="Dot demo (reference consumer)">
         <p>
-          The <a href="/demo/spatial" className="text-hot underline">spatial demo</a> is a bouncing-square layer on a <code className="font-mono text-sm">dot</code> anchor channel. Motion lives in <code className="font-mono text-sm">lib/dot.ts</code>; the <code className="font-mono text-sm">SpatialContentLayer</code> module is <code className="font-mono text-sm">lib/dot-layer.tsx</code> (shared <code className="font-mono text-sm">evaluateFrame</code> for map + display).
+          The <a href="/demo/spatial" className="text-hot underline">spatial demo</a> is a bouncing-circle layer on a <code className="font-mono text-sm">dot</code> anchor channel. Motion lives in <code className="font-mono text-sm">lib/dot.ts</code>; the <code className="font-mono text-sm">SpatialContentLayer</code> module is <code className="font-mono text-sm">lib/dot-layer.tsx</code> (shared <code className="font-mono text-sm">evaluateFrame</code> for map + display).
         </p>
         <CodeBlock
           code={`// dot-layer.tsx — data + consumer renderers

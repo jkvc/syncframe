@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import type { ServerClock } from '@syncframe/core/react';
 import type { CoreSnapshot } from '@syncframe/core/server';
 import { defaultSpatialMeta } from '@syncframe/spatial/server';
-import { complementColor, dotLayer, evaluateDotFrame } from '../dot-layer';
+import {
+  complementColor,
+  dotLayer,
+  evaluateDotFrame,
+  maxRippleRadius,
+} from '../dot-layer';
 import { buildInitialDotAnchor, DOT_SQUARE_SIZE } from '../dot';
 import { DOT_CHANNEL_ID } from '../spatial-config';
 
@@ -24,6 +29,16 @@ describe('complementColor', () => {
   });
 });
 
+describe('maxRippleRadius', () => {
+  it('reaches the farthest world corner from the bounce center', () => {
+    expect(maxRippleRadius(960, 540, 1920, 1080)).toBeCloseTo(
+      Math.hypot(960, 540),
+      5,
+    );
+    expect(maxRippleRadius(0, 0, 1920, 1080)).toBeCloseTo(Math.hypot(1920, 1080), 5);
+  });
+});
+
 describe('evaluateDotFrame', () => {
   it('returns empty shapes when dot anchor missing', () => {
     const frame = dotLayer.evaluateFrame({
@@ -34,7 +49,7 @@ describe('evaluateDotFrame', () => {
     expect(frame.shapes).toEqual([]);
   });
 
-  it('evaluates square dot, complement background, and labels', () => {
+  it('evaluates circular dot bbox, complement background, and labels', () => {
     const at = 1000;
     const anchor = buildInitialDotAnchor(1920, 1080, at);
     const snapshot: CoreSnapshot = {

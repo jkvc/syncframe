@@ -12,6 +12,13 @@ import {
   type WorldShape,
   type WorldShapePaint,
 } from '@syncframe/spatial/ui';
+import { DOT_SQUARE_SIZE } from './dot';
+
+const DOT_BORDER_COLOR = '#000000';
+/** Border width in world units — scales with projected dot size on displays. */
+const DOT_BORDER_WIDTH_WORLD = 4;
+/** Ripple ring stroke in world units — scales on displays. */
+const RIPPLE_STROKE_WORLD = 8;
 
 function viewportPaintStyle(paint: WorldShapePaint): CSSProperties {
   if (paint.kind === 'solid') {
@@ -24,8 +31,54 @@ function viewportPaintStyle(paint: WorldShapePaint): CSSProperties {
   };
 }
 
+function renderRippleRingAsSvg(shape: WorldShape, key: number): ReactNode {
+  const opacity = shape.opacity ?? 1;
+  const stroke = shape.paint.kind === 'solid' ? shape.paint.color : '#ffffff';
+  const cx = shape.x + shape.width / 2;
+  const cy = shape.y + shape.height / 2;
+  const r = Math.max(0, shape.width / 2 - RIPPLE_STROKE_WORLD / 2);
+  return (
+    <circle
+      key={key}
+      cx={cx}
+      cy={cy}
+      r={r}
+      fill="none"
+      stroke={stroke}
+      strokeWidth={RIPPLE_STROKE_WORLD}
+      opacity={opacity}
+    />
+  );
+}
+
+function renderDotCircleAsSvg(shape: WorldShape, key: number): ReactNode {
+  const opacity = shape.opacity ?? 1;
+  const fill = shape.paint.kind === 'solid' ? shape.paint.color : 'transparent';
+  const cx = shape.x + shape.width / 2;
+  const cy = shape.y + shape.height / 2;
+  const r = shape.width / 2;
+  return (
+    <circle
+      key={key}
+      cx={cx}
+      cy={cy}
+      r={r}
+      fill={fill}
+      stroke={DOT_BORDER_COLOR}
+      strokeWidth={DOT_BORDER_WIDTH_WORLD}
+      opacity={opacity}
+    />
+  );
+}
+
 function renderWorldShapeAsSvg(shape: WorldShape, key: number): ReactNode {
   const opacity = shape.opacity ?? 1;
+  if (shape.label === 'ripple') {
+    return renderRippleRingAsSvg(shape, key);
+  }
+  if (shape.label === 'dot') {
+    return renderDotCircleAsSvg(shape, key);
+  }
   if (shape.paint.kind === 'image') {
     return (
       <image
@@ -53,8 +106,40 @@ function renderWorldShapeAsSvg(shape: WorldShape, key: number): ReactNode {
   );
 }
 
-function renderProjectedShapeAsDiv(shape: ViewportProjectedShape, key: number): ReactNode {
+function rippleViewportStyle(screenSize: number, color: string): CSSProperties {
+  const borderPx = Math.max(
+    2,
+    (RIPPLE_STROKE_WORLD / DOT_SQUARE_SIZE) * screenSize,
+  );
+  return {
+    borderRadius: '50%',
+    background: 'transparent',
+    border: `${borderPx}px solid ${color}`,
+    boxSizing: 'border-box',
+  };
+}
+
+function dotViewportStyle(screenSize: number): CSSProperties {
+  const borderPx = Math.max(
+    2,
+    (DOT_BORDER_WIDTH_WORLD / DOT_SQUARE_SIZE) * screenSize,
+  );
+  return {
+    borderRadius: '50%',
+    border: `${borderPx}px solid ${DOT_BORDER_COLOR}`,
+    boxSizing: 'border-box',
+  };
+}
+
+function renderProjectedShapeAsDiv(
+  shape: ViewportProjectedShape,
+  label: string | undefined,
+  key: number,
+): ReactNode {
   if (!shape.visible) return null;
+  const size = Math.min(shape.screenW, shape.screenH);
+  const solidColor =
+    shape.paint.kind === 'solid' ? shape.paint.color : '#ffffff';
   return (
     <div
       key={key}
@@ -64,7 +149,11 @@ function renderProjectedShapeAsDiv(shape: ViewportProjectedShape, key: number): 
         width: shape.screenW,
         height: shape.screenH,
         opacity: shape.opacity,
-        ...viewportPaintStyle(shape.paint),
+        ...(label === 'ripple'
+          ? rippleViewportStyle(size, solidColor)
+          : label === 'dot'
+            ? { ...viewportPaintStyle(shape.paint), ...dotViewportStyle(size) }
+            : viewportPaintStyle(shape.paint)),
       }}
     />
   );
@@ -82,8 +171,14 @@ export function renderDotFrameAsViewport(
   viewportWidth: number,
   viewportHeight: number,
 ): ReactNode {
-  return projectWorldFrameToViewport(frame, pose, viewportWidth, viewportHeight).map(
-    (shape, i) => renderProjectedShapeAsDiv(shape, i),
+  const projected = projectWorldFrameToViewport(
+    frame,
+    pose,
+    viewportWidth,
+    viewportHeight,
+  );
+  return projected.map((shape, i) =>
+    renderProjectedShapeAsDiv(shape, frame.shapes[i]?.label, i),
   );
 }
 
