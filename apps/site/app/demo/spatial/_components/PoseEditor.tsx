@@ -57,7 +57,6 @@ export default function PoseEditor({ screenName, pose }: PoseEditorProps) {
           {field('worldY', 'worldY')}
           {field('worldWidth', 'width')}
           {field('worldHeight', 'height')}
-          {field('rotationDeg', 'rotation°')}
         </div>
         <Pill onClick={() => void save()} disabled={pending} size="xs" active>
           Save pose

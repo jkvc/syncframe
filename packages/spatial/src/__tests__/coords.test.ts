@@ -11,7 +11,6 @@ const pose: ScreenPose = {
   worldY: 200,
   worldWidth: 400,
   worldHeight: 300,
-  rotationDeg: 0,
 };
 
 describe('sliceWorldRegion', () => {

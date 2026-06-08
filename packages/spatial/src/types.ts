@@ -10,8 +10,6 @@ export interface ScreenPose {
   worldY: number;
   worldWidth: number;
   worldHeight: number;
-  /** Kept for forward compatibility; coord math ignores until implemented. */
-  rotationDeg: number;
 }
 
 export interface ScreenSession {
@@ -62,7 +60,6 @@ export const DEFAULT_POSE: ScreenPose = {
   worldY: 0,
   worldWidth: DEFAULT_WORLD_WIDTH,
   worldHeight: DEFAULT_WORLD_HEIGHT,
-  rotationDeg: 0,
 };
 
 /** Session keys auto-expire after this many ms of no heartbeat. */
@@ -95,7 +92,6 @@ export function normalizeScreenPose(input: unknown): ScreenPose | null {
   const worldY = num('worldY');
   const worldWidth = num('worldWidth');
   const worldHeight = num('worldHeight');
-  const rotationDeg = num('rotationDeg') ?? 0;
   if (
     worldX === null ||
     worldY === null ||
@@ -105,5 +101,5 @@ export function normalizeScreenPose(input: unknown): ScreenPose | null {
     return null;
   }
   if (worldWidth <= 0 || worldHeight <= 0) return null;
-  return { worldX, worldY, worldWidth, worldHeight, rotationDeg };
+  return { worldX, worldY, worldWidth, worldHeight };
 }

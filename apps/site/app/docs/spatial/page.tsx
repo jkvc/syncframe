@@ -83,7 +83,6 @@ interface ScreenPose {
   worldY: number;
   worldWidth: number;
   worldHeight: number;
-  rotationDeg: number;  // stored; coord math ignores in v1
 }`}
         />
         <p>
@@ -139,7 +138,7 @@ import {
         <CodeBlock
           code={`import { worldToScreen, screenToWorld } from '@syncframe/spatial/server';
 
-const pose = { worldX: 100, worldY: 200, worldWidth: 400, worldHeight: 300, rotationDeg: 0 };
+const pose = { worldX: 100, worldY: 200, worldWidth: 400, worldHeight: 300 };
 
 // World (300, 350) → normalized (0.5, 0.5) — center of this pose's bbox
 worldToScreen({ x: 300, y: 350 }, pose);
@@ -351,8 +350,7 @@ export const dotLayer: SpatialContentLayer = {
             "worldX": 0,
             "worldY": 0,
             "worldWidth": 960,
-            "worldHeight": 1080,
-            "rotationDeg": 0
+            "worldHeight": 1080
           },
           "createdAt": "2026-06-07T12:00:00.000Z",
           "sessions": {

@@ -185,7 +185,6 @@ export default function CalibrationGrid({
 
       <div className="absolute bottom-3 left-3 rounded bg-black/60 px-2 py-1 font-mono text-[11px] text-white/75">
         pose: x={pose.worldX} y={pose.worldY} w={pose.worldWidth} h={pose.worldHeight}
-        {pose.rotationDeg ? ` rot=${pose.rotationDeg}°` : ''}
       </div>
 
       <div className="absolute bottom-3 right-3 space-y-0.5 rounded bg-black/60 px-2 py-1 text-right font-mono text-[11px] text-white/75">

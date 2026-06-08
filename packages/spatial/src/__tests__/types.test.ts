@@ -22,14 +22,12 @@ describe('normalizeScreenPose', () => {
         worldY: 20,
         worldWidth: 400,
         worldHeight: 300,
-        rotationDeg: 0,
       }),
     ).toEqual({
       worldX: 10,
       worldY: 20,
       worldWidth: 400,
       worldHeight: 300,
-      rotationDeg: 0,
     });
   });
 
