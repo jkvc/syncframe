@@ -86,27 +86,76 @@ function evaluateScalar(
         />
       </DocSection>
 
-      <DocSection title="Pluggable storage">
+      <DocSection title="SyncServer">
         <p>
-          Core is backend-agnostic. Ships with in-memory store. Bring your own
-          database or cache.
+          Server-side entry point: anchor CRUD, meta patches, snapshot build, and
+          pub/sub fan-out. Each instance is bound to one <code className="font-mono text-sm">namespace</code> at construction (default <code className="font-mono text-sm">default</code>). Need multiple isolated scopes? Run multiple <code className="font-mono text-sm">SyncServer</code> instances over a shared store.
         </p>
         <CodeBlock
-          code={`class SyncServer {
-  constructor({ store, transport, namespace?: string });
-  getAnchor(channelId): Promise<Anchor | null>;
-  setAnchor(channelId, anchor): Promise<void>;
-  buildSnapshot(): Promise<CoreSnapshot>;
-  // ... more methods
-}`}
-          note="Bind one namespace per SyncServer instance. Customers needing multiple partitions run multiple servers or implement SyncStore directly."
+          code={`import { SyncServer, InMemoryStore, EventEmitterTransport } from '@syncframe/core/server';
+
+const server = new SyncServer({
+  store: new InMemoryStore(),
+  transport: new EventEmitterTransport(),
+  namespace: 'timer',
+});
+
+await server.setAnchor('timer', {
+  at: server.clockProbe(),
+  value: 60,
+  motion: { kind: 'scalar', ratePerMs: -0.001 },
+});
+await server.publishUpdate();`}
         />
+        <CodeBlock
+          code={`// SSE routes: repair channel registry before buildSnapshot()
+await server.ensureAnchor('timer', () => defaultAnchor(Date.now()));
+const snapshot = await server.buildSnapshot();`}
+          note="ensureAnchor re-registers the channel set so listAnchors matches getAnchor — important for snapshot streams."
+        />
+      </DocSection>
+
+      <DocSection title="React hooks">
+        <p>
+          Client entry point. Hooks subscribe to an SSE endpoint that emits{' '}
+          <code className="font-mono text-sm">CoreSnapshot</code> JSON. Multiple
+          hooks on the same page share one <code className="font-mono text-sm">EventSource</code> per stream URL.
+        </p>
+        <CodeBlock
+          code={`import { useServerClock, useAnchor } from '@syncframe/core/react';
+import { evaluateScalar } from '@syncframe/core/server';
+
+const clock = useServerClock('/api/clock');
+const anchor = useAnchor<number>('timer', '/api/timer/stream');
+
+// In a rAF loop:
+const value = anchor
+  ? evaluateScalar(anchor, clock.serverNow())
+  : null;`}
+          note="No roomId on hooks — partition scope is chosen server-side when the stream route wires SyncServer."
+        />
+      </DocSection>
+
+      <DocSection title="Pluggable storage">
+        <p>
+          Core is backend-agnostic. Ships with in-memory defaults;{' '}
+          <code className="font-mono text-sm">@syncframe/redis</code> provides
+          production store + transport. Implement <code className="font-mono text-sm">SyncStore</code> for other backends — the low-level interface still takes an explicit namespace partition key if you use the store directly.
+        </p>
+        <ActionRow>
+          <Pill href="/docs/redis" size="xs">
+            Redis adapter docs
+          </Pill>
+        </ActionRow>
       </DocSection>
 
       <DocSection title="Next steps">
         <ActionRow>
+          <Pill href="/docs/redis" size="xs">
+            Redis adapter
+          </Pill>
           <Pill href="/demo/core" active size="xs">
-            Try the demo
+            Timer demo
           </Pill>
         </ActionRow>
       </DocSection>

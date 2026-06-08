@@ -19,7 +19,7 @@ export function useDisplaySurface({
   metaKey,
   heartbeat = true,
 }: UseDisplaySurfaceOptions) {
-  const { spatial, connected } = useSpatialSnapshot({
+  const { spatial, snapshot, connected } = useSpatialSnapshot({
     streamEndpoint,
     metaKey,
   });
@@ -37,6 +37,7 @@ export function useDisplaySurface({
 
   return {
     spatial,
+    snapshot,
     connected,
     entry: entry as ScreenEntry | null,
     pose,

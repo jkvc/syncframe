@@ -30,14 +30,15 @@ import { SyncServer, InMemoryStore, EventEmitterTransport } from '@syncframe/cor
 const server = new SyncServer({
   store: new InMemoryStore(),
   transport: new EventEmitterTransport(),
+  namespace: 'demo',
 });
 
-await server.setAnchor('room1', 'video', {
+await server.setAnchor('video', {
   at: server.clockProbe(),
   value: 45.5,
   motion: { kind: 'scalar', ratePerMs: 0.001 }, // 1 unit/sec
 });
-await server.publishUpdate('room1');
+await server.publishUpdate();
 ```
 
 ```ts

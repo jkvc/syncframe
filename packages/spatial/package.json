@@ -11,7 +11,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./server": "./src/server-entry.ts",
-    "./react": "./src/react-entry.ts"
+    "./react": "./src/react-entry.ts",
+    "./ui": "./src/ui-entry.ts"
   },
   "scripts": {
     "type-check": "tsc --noEmit",

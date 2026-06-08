@@ -1,15 +1,10 @@
 import { Suspense } from 'react';
+import { PresentationBlank } from '@syncframe/spatial/ui';
 import { SpatialDisplay } from '../_components/SpatialDisplay';
 
 export default function SpatialDisplayPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-full items-center justify-center text-white/60">
-          Loading…
-        </div>
-      }
-    >
+    <Suspense fallback={<PresentationBlank />}>
       <SpatialDisplay />
     </Suspense>
   );

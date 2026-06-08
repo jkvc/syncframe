@@ -2,11 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useServerClock, useAnchor } from '@syncframe/core/react';
-import {
-  useSpatialSnapshot,
-  listScreenNames,
-  isScreenOnline,
-} from '@syncframe/spatial/react';
+import { useSpatialSnapshot, listScreenNames, isScreenOnline } from '@syncframe/spatial/react';
+import { TopDownRoomMap } from '@syncframe/spatial/ui';
 import Pill from '@/components/editorial/Pill';
 import StampShell from '@/components/ui/StampShell';
 import {
@@ -15,16 +12,16 @@ import {
   DOT_CHANNEL_ID,
 } from '@/lib/spatial-config';
 import type { DotAnchor } from '@/lib/dot';
-import TopDownRoomMap from './TopDownRoomMap';
-import DotMapPreview from './DotMapPreview';
+import { DEFAULT_SPATIAL_CONTENT_LAYER } from '@/lib/spatial-content-registry';
 import PoseEditor from './PoseEditor';
 
 export function SpatialOperator() {
-  const { spatial, connected } = useSpatialSnapshot({
+  const { spatial, snapshot, connected } = useSpatialSnapshot({
     streamEndpoint: SPATIAL_STREAM_ENDPOINT,
   });
   const clock = useServerClock('/api/clock');
   const dotAnchor = useAnchor(DOT_CHANNEL_ID, SPATIAL_STREAM_ENDPOINT) as DotAnchor | null;
+  const contentLayer = DEFAULT_SPATIAL_CONTENT_LAYER;
   const [selected, setSelected] = useState<string | null>(null);
   const [newName, setNewName] = useState('');
 
@@ -41,7 +38,7 @@ export function SpatialOperator() {
     !!dotAnchor &&
     (dotAnchor.motion.vxUnitsPerMs !== 0 || dotAnchor.motion.vyUnitsPerMs !== 0);
 
-  if (!spatial) {
+  if (!spatial || !snapshot) {
     return (
       <p className="caption-mono text-ink-faint">
         Connecting{connected ? '' : ' (offline)'}…
@@ -50,6 +47,7 @@ export function SpatialOperator() {
   }
 
   const selectedEntry = selected ? spatial.screens[selected] : null;
+  const MapPreview = contentLayer.MapPreview;
 
   const dotAction = (action: 'start' | 'pause' | 'reset') =>
     fetch(`${SPATIAL_API_BASE}/dot`, {
@@ -123,7 +121,7 @@ export function SpatialOperator() {
             Reset dot
           </Pill>
           <span className="caption-mono ml-auto text-ink-faint">
-            {connected ? 'SSE connected' : 'SSE offline'}
+            {connected ? 'SSE connected' : 'SSE offline'} · layer {contentLayer.id}
           </span>
         </div>
       </StampShell>
@@ -140,14 +138,16 @@ export function SpatialOperator() {
         </Pill>
       </div>
 
-      <TopDownRoomMap
-        spatial={spatial}
-        selected={selected}
-        onSelect={setSelected}
-        renderWorldContent={() => (
-          <DotMapPreview anchor={dotAnchor} clock={clock} />
-        )}
-      />
+      <StampShell variant="card" bleed={false} className="p-3">
+        <TopDownRoomMap
+          spatial={spatial}
+          selectedScreenName={selected}
+          clock={clock}
+          snapshot={snapshot}
+          onScreenSelect={setSelected}
+          renderWorldContent={(ctx) => <MapPreview {...ctx} />}
+        />
+      </StampShell>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {names.map((name) => {

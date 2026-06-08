@@ -10,6 +10,7 @@ import {
   type ScreenEntry,
   type ScreenPose,
   type ScreenSession,
+  type WorldBbox,
   SESSION_TTL_MS,
 } from './types';
 import type { SpatialMeta } from './types';
@@ -22,6 +23,7 @@ export function defaultSpatialMeta(): SpatialMeta {
   return {
     worldBbox: { width: DEFAULT_WORLD_WIDTH, height: DEFAULT_WORLD_HEIGHT },
     renderMode: 'calibration',
+    contentLayerId: 'dot',
     screens: {},
   };
 }
@@ -37,6 +39,9 @@ export function parseSpatialMeta(raw: unknown): SpatialMeta {
   }
   if (o.renderMode === 'calibration' || o.renderMode === 'content') {
     base.renderMode = o.renderMode;
+  }
+  if (typeof o.contentLayerId === 'string') {
+    base.contentLayerId = o.contentLayerId;
   }
   if (o.screens && typeof o.screens === 'object' && !Array.isArray(o.screens)) {
     base.screens = o.screens as Record<string, ScreenEntry>;
@@ -109,6 +114,17 @@ export function deleteScreen(meta: SpatialMeta, name: string): SpatialMeta {
 
 export function setRenderMode(meta: SpatialMeta, mode: RenderMode): SpatialMeta {
   return { ...meta, renderMode: mode };
+}
+
+export function setWorldBbox(meta: SpatialMeta, bbox: WorldBbox): SpatialMeta {
+  return {
+    ...meta,
+    worldBbox: { width: bbox.width, height: bbox.height },
+  };
+}
+
+export function setContentLayerId(meta: SpatialMeta, id: string): SpatialMeta {
+  return { ...meta, contentLayerId: id };
 }
 
 export type HeartbeatResult = SpatialMeta | 'deleted';

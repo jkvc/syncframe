@@ -22,11 +22,11 @@ Tracked shortcuts and deferred work. Delete entries once resolved.
 - **File(s):** `apps/site/app/api/spatial/`
 - **Fix:** Gate mutations behind auth or a dev-only env flag; or scope rooms per tenant/session.
 
-### [2026-06-07] No world-bbox resize in spatial demo
+### [2026-06-07] No world-bbox resize route in spatial demo
 
-- **Context:** World canvas is fixed at 1920×1080. Cabin's screen-sync demo has `/api/screen-sync/world-bbox` to resize and re-anchor the dot.
-- **File(s):** `apps/site/app/api/spatial/`, `packages/spatial/src/reducers.ts`
-- **Fix:** Add `setWorldBbox` reducer + route, re-anchor dot on resize (mirror cabin world-bbox route).
+- **Context:** `setWorldBbox` reducer exists; world canvas is still fixed at 1920×1080 in the demo because no API route re-anchors the dot on resize.
+- **File(s):** `apps/site/app/api/spatial/`
+- **Fix:** Add `/api/spatial/world-bbox` route, re-anchor dot on resize (mirror cabin world-bbox route).
 
 ### [2026-06-07] SSE connection sharing via core snapshot cache
 

@@ -6,7 +6,9 @@ import {
   heartbeat,
   pruneStaleSessions,
   parseSpatialMeta,
+  setContentLayerId,
   setRenderMode,
+  setWorldBbox,
   updatePose,
   SESSION_TTL_MS,
 } from '../reducers';
@@ -100,6 +102,20 @@ describe('setRenderMode', () => {
   it('toggles render mode', () => {
     const next = setRenderMode(defaultSpatialMeta(), 'content');
     expect(next.renderMode).toBe('content');
+  });
+});
+
+describe('setWorldBbox', () => {
+  it('updates world canvas size', () => {
+    const next = setWorldBbox(defaultSpatialMeta(), { width: 3840, height: 2160 });
+    expect(next.worldBbox).toEqual({ width: 3840, height: 2160 });
+  });
+});
+
+describe('setContentLayerId', () => {
+  it('pins active content layer', () => {
+    const next = setContentLayerId(defaultSpatialMeta(), 'pano');
+    expect(next.contentLayerId).toBe('pano');
   });
 });
 

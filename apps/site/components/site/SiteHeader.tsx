@@ -1,15 +1,19 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import Pill from "@/components/editorial/Pill";
 import ContentColumn from "@/components/site/ContentColumn";
+import NavMenu from "@/components/site/NavMenu";
 import Wordmark from "@/components/site/Wordmark";
 
-const NAV = [
-  { href: "/docs/core", label: "Docs" },
-  { href: "/demo/core", label: "Demos" },
-  { href: "/docs/spatial", label: "Spatial" },
-  { href: "/demo/spatial", label: "Spatial demo" },
+const DOC_ITEMS = [
+  { href: "/docs/core", label: "core" },
+  { href: "/docs/redis", label: "redis" },
+  { href: "/docs/spatial", label: "spatial" },
+] as const;
+
+const DEMO_ITEMS = [
+  { href: "/demo/core", label: "timer" },
+  { href: "/demo/spatial", label: "dot" },
 ] as const;
 
 export default function SiteHeader() {
@@ -19,22 +23,21 @@ export default function SiteHeader() {
     <header className="px-5 py-4 sm:px-8">
       <ContentColumn>
         <nav className="flex items-center justify-between gap-4">
-        <Wordmark />
-        <div className="flex flex-wrap items-center gap-2">
-          {NAV.map(({ href, label }) => {
-            const section = href.split("/")[1];
-            return (
-              <Pill
-                key={href}
-                href={href}
-                active={pathname.startsWith(`/${section}`)}
-                size="xs"
-              >
-                {label}
-              </Pill>
-            );
-          })}
-        </div>
+          <Wordmark />
+          <div className="flex items-center gap-2">
+            <NavMenu
+              label="doc"
+              items={DOC_ITEMS}
+              pathname={pathname}
+              menuActive={(p) => p.startsWith("/docs")}
+            />
+            <NavMenu
+              label="demo"
+              items={DEMO_ITEMS}
+              pathname={pathname}
+              menuActive={(p) => p.startsWith("/demo")}
+            />
+          </div>
         </nav>
       </ContentColumn>
     </header>

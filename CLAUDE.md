@@ -62,7 +62,7 @@ The library has exactly two layers:
 | Layer     | Package               | Contains                                                                                                      | Does NOT contain                                                    |
 | --------- | --------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | **Core**  | `@syncframe/core`     | Clock sync, `Anchor<T,M>`, evaluators, smoother, `SyncStore` + `SyncTransport` interfaces, React hooks        | Anything about screens, poses, calibration, world bboxes            |
-| **Spatial** | `@syncframe/spatial` | Screen registry, `ScreenPose`, world bbox, presence, coord math, `SpatialServer`, headless React hooks        | UI components, motion evaluators, content layers (consumer concern)   |
+| **Spatial** | `@syncframe/spatial` | Screen registry, `ScreenPose`, world bbox, presence, coord math, `SpatialServer`, React hooks, optional `/ui` display kit | Motion evaluators, concrete content layers (consumer concern)   |
 
 **The rule:** Core has no notion of screens. Spatial has no motion math of its own — it uses `@syncframe/core` purely as infrastructure.
 
@@ -75,6 +75,10 @@ The library has exactly two layers:
 - `@syncframe/core` — full barrel; pulls React in. Convenience only.
 
 This keeps hooks (and their DOM-lib types) out of server bundles and non-DOM packages. See [`notes/2026-06-06-package-architecture.md`](notes/2026-06-06-package-architecture.md).
+
+### 5.6. Spatial UI (`/ui`)
+
+`@syncframe/spatial/ui` ships display chrome ported from the Reckon reference: `CalibrationGrid`, `TopDownRoomMap`, `ChromeFreeDisplay`, `IdentifyFlash`, and the `SpatialContentLayer` contract (shared `evaluateFrame` for map + wall). Operator panels (pose editor, screen cards) stay in the app. Content layers (dot, pano) are app modules conforming to `SpatialContentLayer`.
 
 ### 6. Storage and Transport Are Pluggable
 

@@ -44,6 +44,8 @@ export interface IdentifyTrigger {
 export interface SpatialMeta {
   worldBbox: WorldBbox;
   renderMode: RenderMode;
+  /** Active content layer id — opaque to spatial; forwarded for operator UI. */
+  contentLayerId?: string;
   screens: Record<string, ScreenEntry>;
   /** Merged at snapshot build from a transient Redis key; not persisted in meta JSON. */
   identifyTrigger?: IdentifyTrigger | null;

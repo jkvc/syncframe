@@ -1,5 +1,5 @@
 /**
- * Chrome-free layout — no site header/footer on kiosk displays.
+ * Presentation layout — fullscreen kiosk; site header/footer hidden via globals.css.
  */
 export default function SpatialDisplayLayout({
   children,
@@ -7,7 +7,7 @@ export default function SpatialDisplayLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-[200] overflow-hidden bg-black">
+    <div data-presentation className="fixed inset-0 z-[200] overflow-hidden bg-black">
       {children}
     </div>
   );
