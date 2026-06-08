@@ -1,11 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import type { SpatialContentLayer, WorldEvalContext, WorldPreviewContext } from '@syncframe/spatial/ui';
-import {
-  mapWorldShapeToScreenPixels,
-  renderWorldFrameAsSvg,
-} from '@syncframe/spatial/ui';
+import { useCallback, useRef } from 'react';
+import type { SpatialContentLayer, WorldEvalContext, WorldFrame } from '@syncframe/spatial/ui';
+import { WorldFrameViewport } from '@syncframe/spatial/ui';
 import type { ContentLayerDisplayProps } from '@syncframe/spatial/ui';
 import { DOT_CHANNEL_ID, evaluateLinear2dBouncing, type DotAnchor } from './dot';
 import { SPATIAL_STREAM_ENDPOINT } from './spatial-config';
@@ -32,7 +29,8 @@ function getDotAnchor(ctx: WorldEvalContext): DotAnchor | null {
   return raw as DotAnchor;
 }
 
-function evaluateDotFrame(ctx: WorldEvalContext) {
+/** Single source of truth for dot appearance — map and displays both call this. */
+function evaluateDotFrame(ctx: WorldEvalContext): WorldFrame {
   const anchor = getDotAnchor(ctx);
   if (!anchor) return { shapes: [] };
   const pos = evaluateLinear2dBouncing(anchor, ctx.clock.serverNow());
@@ -53,141 +51,65 @@ function evaluateDotFrame(ctx: WorldEvalContext) {
   };
 }
 
-function DotMapPreview({ snapshot, clock, spatial }: WorldPreviewContext) {
-  const [, setTick] = useState(0);
-
-  useEffect(() => {
-    const anchor = getDotAnchor({ snapshot, clock, spatial });
-    if (!anchor) return;
-    let raf = 0;
-    const tick = () => {
-      setTick((n) => (n + 1) % 1_000_000);
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [snapshot, clock, spatial]);
-
-  const frame = evaluateDotFrame({ snapshot, clock, spatial });
-  return <>{renderWorldFrameAsSvg(frame)}</>;
-}
-
+/** Display-only offset decay — not part of evaluateFrame. */
 function DotDisplay({ pose, snapshot, clock, spatial }: ContentLayerDisplayProps) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const boxRef = useRef<HTMLDivElement>(null);
-
-  const snapshotRef = useRef(snapshot);
-  snapshotRef.current = snapshot;
-  const poseRef = useRef(pose);
-  poseRef.current = pose;
-  const clockRef = useRef(clock);
-  clockRef.current = clock;
-  const spatialRef = useRef(spatial);
-  spatialRef.current = spatial;
-
   const offsetRef = useRef<{ x: number; y: number; atServerMs: number } | null>(null);
   const prevAnchorKeyRef = useRef<string | null>(null);
   const prevDisplayedRef = useRef<{ x: number; y: number } | null>(null);
 
-  useEffect(() => {
-    let raf = 0;
-    const tick = () => {
-      const ctx = {
-        snapshot: snapshotRef.current,
-        clock: clockRef.current,
-        spatial: spatialRef.current,
-      };
-      const anchor = getDotAnchor(ctx);
-      const p = poseRef.current;
-      const box = boxRef.current;
+  const adjustFrame = useCallback((frame: WorldFrame, ctx: WorldEvalContext): WorldFrame => {
+    const anchor = getDotAnchor(ctx);
+    if (!anchor || frame.shapes.length === 0) return frame;
 
-      if (!anchor || !box) {
-        if (box) box.style.display = 'none';
-        raf = requestAnimationFrame(tick);
-        return;
-      }
+    const serverNow = ctx.clock.serverNow();
+    const shape = frame.shapes[0]!;
+    const ideal = { x: shape.x, y: shape.y };
+    const motion = anchor.motion;
+    const anchorKey = `${anchor.at}:${anchor.value.x},${anchor.value.y}:${motion.vxUnitsPerMs}:${motion.vyUnitsPerMs}:${motion.worldWidth}:${motion.worldHeight}`;
 
-      const serverNow = ctx.clock.serverNow();
-      const ideal = evaluateLinear2dBouncing(anchor, serverNow);
-      const motion = anchor.motion;
-      const anchorKey = `${anchor.at}:${anchor.value.x},${anchor.value.y}:${motion.vxUnitsPerMs}:${motion.vyUnitsPerMs}:${motion.worldWidth}:${motion.worldHeight}`;
-
-      if (anchorKey !== prevAnchorKeyRef.current) {
-        if (prevDisplayedRef.current && prevAnchorKeyRef.current !== null) {
-          const dx = prevDisplayedRef.current.x - ideal.x;
-          const dy = prevDisplayedRef.current.y - ideal.y;
-          const mag = Math.hypot(dx, dy);
-          if (mag > OFFSET_SNAP_THRESHOLD_PX) {
-            offsetRef.current = null;
-          } else {
-            offsetRef.current = { x: dx, y: dy, atServerMs: serverNow };
-          }
-        } else {
-          offsetRef.current = null;
-        }
-        prevAnchorKeyRef.current = anchorKey;
-      }
-
-      let dispX = ideal.x;
-      let dispY = ideal.y;
-      if (offsetRef.current) {
-        const elapsed = serverNow - offsetRef.current.atServerMs;
-        const decay = Math.exp(-elapsed / OFFSET_DECAY_TC_MS);
-        if (decay < 0.01) {
+    if (anchorKey !== prevAnchorKeyRef.current) {
+      if (prevDisplayedRef.current && prevAnchorKeyRef.current !== null) {
+        const dx = prevDisplayedRef.current.x - ideal.x;
+        const dy = prevDisplayedRef.current.y - ideal.y;
+        const mag = Math.hypot(dx, dy);
+        if (mag > OFFSET_SNAP_THRESHOLD_PX) {
           offsetRef.current = null;
         } else {
-          dispX = ideal.x + offsetRef.current.x * decay;
-          dispY = ideal.y + offsetRef.current.y * decay;
+          offsetRef.current = { x: dx, y: dy, atServerMs: serverNow };
         }
-      }
-      prevDisplayedRef.current = { x: dispX, y: dispY };
-
-      const shape = {
-        x: dispX,
-        y: dispY,
-        width: motion.squareWidth,
-        height: motion.squareHeight,
-      };
-      const wrap = wrapRef.current;
-      const screenW = wrap?.clientWidth ?? window.innerWidth;
-      const screenH = wrap?.clientHeight ?? window.innerHeight;
-      const { screenX, screenY, screenW: screenSw, screenH: screenSh } = mapWorldShapeToScreenPixels(
-        shape,
-        p,
-        screenW,
-        screenH,
-      );
-
-      const fullyOff =
-        screenX + screenSw <= 0 ||
-        screenY + screenSh <= 0 ||
-        screenX >= screenW ||
-        screenY >= screenH;
-
-      if (fullyOff) {
-        box.style.display = 'none';
       } else {
-        box.style.display = '';
-        box.style.transform = `translate3d(${screenX}px, ${screenY}px, 0)`;
-        box.style.width = `${screenSw}px`;
-        box.style.height = `${screenSh}px`;
-        box.style.background = DOT_COLORS[ideal.bounceCount % DOT_COLORS.length]!;
+        offsetRef.current = null;
       }
+      prevAnchorKeyRef.current = anchorKey;
+    }
 
-      raf = requestAnimationFrame(tick);
+    let dispX = ideal.x;
+    let dispY = ideal.y;
+    if (offsetRef.current) {
+      const elapsed = serverNow - offsetRef.current.atServerMs;
+      const decay = Math.exp(-elapsed / OFFSET_DECAY_TC_MS);
+      if (decay < 0.01) {
+        offsetRef.current = null;
+      } else {
+        dispX = ideal.x + offsetRef.current.x * decay;
+        dispY = ideal.y + offsetRef.current.y * decay;
+      }
+    }
+    prevDisplayedRef.current = { x: dispX, y: dispY };
+
+    return {
+      shapes: [{ ...shape, x: dispX, y: dispY }],
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
   }, []);
 
   return (
-    <div ref={wrapRef} className="fixed inset-0 overflow-hidden bg-black">
-      <div
-        ref={boxRef}
-        className="absolute left-0 top-0 will-change-transform"
-        style={{ transform: 'translate3d(0,0,0)', display: 'none' }}
-      />
-    </div>
+    <WorldFrameViewport
+      pose={pose}
+      evaluateFrame={evaluateDotFrame}
+      adjustFrame={adjustFrame}
+      ctx={{ snapshot, clock, spatial }}
+      className="fixed inset-0 overflow-hidden bg-black"
+    />
   );
 }
 
@@ -195,7 +117,6 @@ export const dotLayer: SpatialContentLayer = {
   id: 'dot',
   label: 'Dot (DVD-logo bouncer)',
   evaluateFrame: evaluateDotFrame,
-  MapPreview: DotMapPreview,
   Display: DotDisplay,
 };
 

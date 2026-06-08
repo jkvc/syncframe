@@ -7,6 +7,7 @@ import CalibrationGrid from './CalibrationGrid';
 import DeletedScreenOverlay from './DeletedScreenOverlay';
 import IdentifyFlash from './IdentifyFlash';
 import type { SpatialContentLayer } from './content-layer';
+import WorldFrameViewport from './WorldFrameViewport';
 
 /** Fullscreen black — kiosk/presentation with no chrome or status text. */
 export function PresentationBlank() {
@@ -67,13 +68,14 @@ export default function ChromeFreeDisplay({
   if (!spatial || !pose || !snapshot) {
     if (presentation) return <PresentationBlank />;
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-[#0a0a0a] font-mono text-sm text-white/40">
+      <div className="fixed inset-0 flex items-center justify-center bg-black font-mono text-sm text-white/40">
         {connected ? 'Loading…' : `Connecting as ${screenName}…`}
       </div>
     );
   }
 
   const Display = contentLayer.Display;
+  const displayCtx = { snapshot, clock, spatial };
 
   return (
     <>
@@ -85,15 +87,23 @@ export default function ChromeFreeDisplay({
           clock={clock}
         />
       )}
-      {isContent && (
-        <Display
-          pose={pose}
-          screenName={screenName}
-          snapshot={snapshot}
-          clock={clock}
-          spatial={spatial}
-        />
-      )}
+      {isContent &&
+        (Display ? (
+          <Display
+            pose={pose}
+            screenName={screenName}
+            snapshot={snapshot}
+            clock={clock}
+            spatial={spatial}
+          />
+        ) : (
+          <WorldFrameViewport
+            pose={pose}
+            evaluateFrame={contentLayer.evaluateFrame}
+            ctx={displayCtx}
+            className="fixed inset-0 overflow-hidden bg-black"
+          />
+        ))}
       <IdentifyFlash trigger={identifyTrigger} screenName={screenName} />
     </>
   );

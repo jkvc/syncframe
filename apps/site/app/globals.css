@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Library UI lives in packages/spatial — scan it so Tailwind emits those utilities. */
+@source "../../../../packages/spatial/src";
+
 @theme inline {
   --font-sans: var(--font-space-grotesk), "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;

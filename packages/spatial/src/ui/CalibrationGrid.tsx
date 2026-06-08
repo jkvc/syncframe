@@ -66,7 +66,7 @@ export default function CalibrationGrid({
   const clockReady = clock.sampleCount > 0;
 
   return (
-    <div ref={wrapRef} className="fixed inset-0 bg-[#0a0a0a] text-white">
+    <div ref={wrapRef} className="fixed inset-0 bg-black text-white">
       <svg
         className="absolute inset-0 h-full w-full"
         viewBox={`${worldX} ${worldY} ${worldWidth} ${worldHeight}`}

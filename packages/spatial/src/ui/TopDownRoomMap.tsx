@@ -1,32 +1,30 @@
 'use client';
 
-import { useRef } from 'react';
-import type { ReactNode } from 'react';
+import type { CoreSnapshot } from '@syncframe/core/server';
 import type { ServerClock } from '@syncframe/core/react';
 import { colorFromName } from '../color-from-name';
 import { isScreenOnline, listScreenNames } from '../reducers';
 import type { ScreenEntry, SpatialMeta } from '../types';
-import type { WorldPreviewContext } from './content-layer';
-
-export type { WorldPreviewContext };
+import type { WorldEvalContext, WorldFrame } from './content-layer';
+import WorldFrameWorldView from './WorldFrameWorldView';
 
 export interface TopDownRoomMapProps {
   spatial: SpatialMeta;
-  selectedScreenName: string | null;
+  snapshot: CoreSnapshot;
   clock: ServerClock;
+  /** Single source of truth for content appearance — same function the displays use. */
+  evaluateFrame: (ctx: WorldEvalContext) => WorldFrame;
+  selectedScreenName: string | null;
   onScreenSelect?: (name: string) => void;
-  renderWorldContent?: (ctx: WorldPreviewContext) => ReactNode;
-  /** When set, builds WorldPreviewContext from spatial + snapshot passed here. */
-  snapshot?: WorldPreviewContext['snapshot'];
 }
 
 export default function TopDownRoomMap({
   spatial,
-  selectedScreenName,
-  clock,
-  onScreenSelect,
-  renderWorldContent,
   snapshot,
+  clock,
+  evaluateFrame,
+  selectedScreenName,
+  onScreenSelect,
 }: TopDownRoomMapProps) {
   const { worldBbox, screens } = spatial;
   const worldWidth = worldBbox.width;
@@ -34,38 +32,32 @@ export default function TopDownRoomMap({
   const now = Date.now();
   const names = listScreenNames(spatial);
 
-  const screenBoundsXs = names.flatMap((name) => {
-    const p = screens[name]!.pose;
-    return [p.worldX, p.worldX + p.worldWidth];
-  });
-  const screenBoundsYs = names.flatMap((name) => {
-    const p = screens[name]!.pose;
-    return [p.worldY, p.worldY + p.worldHeight];
-  });
-  const minX = Math.min(0, ...screenBoundsXs);
-  const maxX = Math.max(worldWidth, ...screenBoundsXs);
-  const minY = Math.min(0, ...screenBoundsYs);
-  const maxY = Math.max(worldHeight, ...screenBoundsYs);
-  const padX = (maxX - minX) * 0.05;
-  const padY = (maxY - minY) * 0.05;
-  const vbX = minX - padX;
-  const vbY = minY - padY;
-  const vbW = maxX - minX + padX * 2;
-  const vbH = maxY - minY + padY * 2;
-
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const previewCtx: WorldPreviewContext | null =
-    renderWorldContent && snapshot
-      ? { snapshot, clock, spatial, worldWidth, worldHeight }
-      : null;
+  const previewCtx = {
+    snapshot,
+    clock,
+    spatial,
+    worldWidth,
+    worldHeight,
+  };
 
   return (
-    <div ref={wrapRef} className="h-full w-full overflow-hidden rounded bg-[#0a0a0a]">
+    <div className="inline-block w-full max-w-3xl rounded bg-black">
       <svg
-        className="h-full w-full"
-        viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
+        viewBox={`0 0 ${worldWidth} ${worldHeight}`}
+        className="block h-auto w-full"
+        style={{ aspectRatio: `${worldWidth} / ${worldHeight}` }}
         preserveAspectRatio="xMidYMid meet"
+        role="img"
+        aria-label={`Top-down map of world ${worldWidth} by ${worldHeight}`}
       >
+        {/* World canvas — content at native world scale (no stretch). */}
+        <rect
+          x={0}
+          y={0}
+          width={worldWidth}
+          height={worldHeight}
+          fill="#000"
+        />
         <rect
           x={0}
           y={0}
@@ -76,28 +68,9 @@ export default function TopDownRoomMap({
           strokeWidth={2}
           vectorEffect="non-scaling-stroke"
         />
+        <WorldFrameWorldView evaluateFrame={evaluateFrame} ctx={previewCtx} />
 
-        {previewCtx && (
-          <>
-            <clipPath id="spatial-world-clip">
-              <rect x={0} y={0} width={worldWidth} height={worldHeight} />
-            </clipPath>
-            <g clipPath="url(#spatial-world-clip)">
-              {renderWorldContent!(previewCtx)}
-            </g>
-          </>
-        )}
-
-        <text
-          x={4}
-          y={vbY + vbH * 0.04}
-          fill="rgba(255,255,255,0.45)"
-          fontSize={Math.max(10, vbW * 0.012)}
-          fontFamily="monospace"
-        >
-          world {worldWidth}×{worldHeight}
-        </text>
-
+        {/* Screen pose overlays — sub-window locations on top of world content. */}
         {names.map((name) => (
           <ScreenRect
             key={name}
@@ -105,10 +78,20 @@ export default function TopDownRoomMap({
             entry={screens[name]!}
             selected={name === selectedScreenName}
             online={isScreenOnline(screens[name]!, now)}
-            vbW={vbW}
+            worldWidth={worldWidth}
             onSelect={onScreenSelect}
           />
         ))}
+
+        <text
+          x={8}
+          y={24}
+          fill="rgba(255,255,255,0.45)"
+          fontSize={Math.max(10, worldWidth * 0.012)}
+          fontFamily="monospace"
+        >
+          world {worldWidth}×{worldHeight}
+        </text>
       </svg>
     </div>
   );
@@ -119,14 +102,14 @@ function ScreenRect({
   entry,
   selected,
   online,
-  vbW,
+  worldWidth,
   onSelect,
 }: {
   name: string;
   entry: ScreenEntry;
   selected: boolean;
   online: boolean;
-  vbW: number;
+  worldWidth: number;
   onSelect?: (name: string) => void;
 }) {
   const { pose } = entry;
@@ -134,13 +117,14 @@ function ScreenRect({
   const opacity = online ? 0.9 : 0.4;
   const stroke = selected ? 'white' : idColor;
   const strokeWidth = selected ? 4 : 2;
-  const fontSize = Math.max(12, vbW * 0.014);
+  const fontSize = Math.max(12, worldWidth * 0.014);
 
   return (
     <g
       opacity={opacity}
       onClick={onSelect ? () => onSelect(name) : undefined}
       className={onSelect ? 'cursor-pointer' : undefined}
+      pointerEvents="all"
     >
       <rect
         x={pose.worldX}
@@ -160,6 +144,7 @@ function ScreenRect({
         fontSize={fontSize}
         fontFamily="ui-sans-serif, system-ui, sans-serif"
         fontWeight={600}
+        pointerEvents="none"
       >
         {name}
       </text>
@@ -169,6 +154,7 @@ function ScreenRect({
         fill="rgba(255,255,255,0.7)"
         fontSize={fontSize * 0.7}
         fontFamily="monospace"
+        pointerEvents="none"
       >
         {pose.worldWidth}×{pose.worldHeight} @ ({pose.worldX},{pose.worldY})
       </text>

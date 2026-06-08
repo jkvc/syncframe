@@ -7,8 +7,19 @@ export type {
   SpatialContentLayer,
 } from './ui/content-layer';
 
-export { renderWorldFrameAsSvg, mapWorldShapeToScreenPixels } from './ui/render-world-frame';
-export type { ScreenShape } from './ui/render-world-frame';
+export {
+  renderWorldFrameAsSvg,
+  renderWorldFrameAsViewport,
+  mapWorldShapeToScreenPixels,
+  projectWorldFrameToViewport,
+} from './ui/render-world-frame';
+export type { ScreenShape, ViewportProjectedShape } from './ui/render-world-frame';
+
+export { default as WorldFrameWorldView } from './ui/WorldFrameWorldView';
+export type { WorldFrameWorldViewProps } from './ui/WorldFrameWorldView';
+
+export { default as WorldFrameViewport } from './ui/WorldFrameViewport';
+export type { WorldFrameViewportProps } from './ui/WorldFrameViewport';
 
 export { default as CalibrationGrid } from './ui/CalibrationGrid';
 export type { CalibrationGridProps } from './ui/CalibrationGrid';

@@ -48,7 +48,6 @@ export function SpatialOperator() {
   }
 
   const selectedEntry = selected ? spatial.screens[selected] : null;
-  const MapPreview = contentLayer.MapPreview;
 
   const dotAction = (action: 'start' | 'pause' | 'reset') =>
     fetch(`${SPATIAL_API_BASE}/dot`, {
@@ -154,11 +153,11 @@ export function SpatialOperator() {
       <StampShell variant="card" bleed={false} className="p-3">
         <TopDownRoomMap
           spatial={spatial}
-          selectedScreenName={selected}
-          clock={clock}
           snapshot={snapshot}
+          clock={clock}
+          evaluateFrame={contentLayer.evaluateFrame}
+          selectedScreenName={selected}
           onScreenSelect={setSelected}
-          renderWorldContent={(ctx) => <MapPreview {...ctx} />}
         />
       </StampShell>
 
