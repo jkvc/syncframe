@@ -25,8 +25,9 @@ export interface Linear2dBouncingMotion extends MotionDescriptor {
 
 export type DotAnchor = Anchor<Vec2, Linear2dBouncingMotion>;
 
-export const DOT_SQUARE_WIDTH = 200;
-export const DOT_SQUARE_HEIGHT = 150;
+export const DOT_SQUARE_SIZE = 200;
+export const DOT_SQUARE_WIDTH = DOT_SQUARE_SIZE;
+export const DOT_SQUARE_HEIGHT = DOT_SQUARE_SIZE;
 export const DOT_DEFAULT_SPEED_PX_PER_MS = 400 / 1000 / Math.SQRT2;
 
 export type DotAction = 'start' | 'pause' | 'reset';

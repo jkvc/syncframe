@@ -215,25 +215,26 @@ const dotAnchor = useAnchor('dot', '/api/spatial/stream');`}
 
       <DocSection title="Content layer contract">
         <p>
-          Each content module exports a <code className="font-mono text-sm">SpatialContentLayer</code> with one <code className="font-mono text-sm">evaluateFrame</code> that defines what the content looks like in world coordinates. Two projections render it:
+          Each content module exports a <code className="font-mono text-sm">SpatialContentLayer</code>: <code className="font-mono text-sm">evaluateFrame</code> returns world-space <strong>data</strong> (<code className="font-mono text-sm">WorldFrame</code>); <code className="font-mono text-sm">MapView</code> and <code className="font-mono text-sm">Display</code> are consumer-owned renderers. The spatial package only supplies coordinate projection helpers.
         </p>
         <ul className="prose-doc list-disc space-y-2 pl-5">
-          <li><strong>Top-down map</strong> — <code className="font-mono text-sm">TopDownRoomMap</code> draws the frame at <code className="font-mono text-sm">(0,0)</code> in <code className="font-mono text-sm">worldW×worldH</code> with uniform scale (like an inline image — no stretch). Screen pose rects are overlaid on top.</li>
-          <li><strong>Wall display</strong> — <code className="font-mono text-sm">WorldFrameViewport</code> crops to the screen pose bbox and stretches to fill the browser window.</li>
+          <li><strong>Top-down map</strong> — <code className="font-mono text-sm">TopDownRoomMap</code> hosts <code className="font-mono text-sm">MapView</code> at <code className="font-mono text-sm">(0,0)</code> in <code className="font-mono text-sm">worldW×worldH</code> with uniform scale. Screen pose rects are overlaid on top.</li>
+          <li><strong>Wall display</strong> — <code className="font-mono text-sm">Display</code> crops to the screen pose bbox and stretches to fill the window (use <code className="font-mono text-sm">projectWorldFrameToViewport</code> for pixel math).</li>
         </ul>
         <CodeBlock
           code={`interface SpatialContentLayer {
   id: string;
   label: string;
   evaluateFrame: (ctx: WorldEvalContext) => WorldFrame;
-  Display?: ComponentType<ContentLayerDisplayProps>;  // optional override
+  MapView: ComponentType<WorldPreviewContext>;
+  Display: ComponentType<ContentLayerDisplayProps>;
 }
 
-// evaluateFrame → renderWorldFrameAsSvg        (world-native, map)
-// evaluateFrame → renderWorldFrameAsViewport    (pose crop + stretch, display)`}
+// @syncframe/spatial/ui — projection only, no draw opinions
+import { projectWorldFrameToViewport } from '@syncframe/spatial/ui';`}
         />
         <p>
-          Override <code className="font-mono text-sm">Display</code> only for display-only effects (offset decay) or heavyweight renderers (pano). The map always uses <code className="font-mono text-sm">evaluateFrame</code> via <code className="font-mono text-sm">TopDownRoomMap</code>.
+          WYSIWYG: map and wall use the same <code className="font-mono text-sm">evaluateFrame</code> and the same consumer renderer styles. A pano layer might use canvas in both slots; the dot demo uses <code className="font-mono text-sm">lib/dot-render.tsx</code>.
         </p>
       </DocSection>
 
@@ -245,12 +246,12 @@ const dotAnchor = useAnchor('dot', '/api/spatial/stream');`}
           code={`import { ChromeFreeDisplay, TopDownRoomMap } from '@syncframe/spatial/ui';
 import { dotLayer } from '@/lib/dot-layer';
 
-// Operator map — same evaluateFrame as the wall; screen overlays on top
+// Operator map — consumer MapView; screen overlays on top
 <TopDownRoomMap
   spatial={spatial}
   snapshot={snapshot}
   clock={clock}
-  evaluateFrame={dotLayer.evaluateFrame}
+  MapView={dotLayer.MapView}
   selectedScreenName={selected}
 />`}
         />
@@ -315,13 +316,13 @@ import { dotLayer } from '@/lib/dot-layer';
           The <a href="/demo/spatial" className="text-hot underline">spatial demo</a> is a bouncing-square layer on a <code className="font-mono text-sm">dot</code> anchor channel. Motion lives in <code className="font-mono text-sm">lib/dot.ts</code>; the <code className="font-mono text-sm">SpatialContentLayer</code> module is <code className="font-mono text-sm">lib/dot-layer.tsx</code> (shared <code className="font-mono text-sm">evaluateFrame</code> for map + display).
         </p>
         <CodeBlock
-          code={`// dot-layer.tsx — evaluateFrame is the only appearance logic
+          code={`// dot-layer.tsx — data + consumer renderers
 export const dotLayer: SpatialContentLayer = {
   id: 'dot',
   evaluateFrame: evaluateDotFrame,
-  Display: DotDisplay,  // optional: WorldFrameViewport + offset decay
+  MapView: DotMapView,      // lib/dot-render.tsx — SVG, fill-only
+  Display: DotDisplay,      // DotViewport + offset decay
 };
-// TopDownRoomMap calls dotLayer.evaluateFrame directly — no separate MapPreview
 
 // Motion math (no React): apps/site/lib/dot.ts`}
           note="Registry: lib/spatial-content-registry.ts. Display omits debug labels in presentation mode."

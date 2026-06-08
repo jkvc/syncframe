@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { ServerClock } from '@syncframe/core/react';
 import type { CoreSnapshot } from '@syncframe/core/server';
 import { defaultSpatialMeta } from '@syncframe/spatial/server';
-import { dotLayer } from '../dot-layer';
-import { buildInitialDotAnchor } from '../dot';
+import { complementColor, dotLayer, evaluateDotFrame } from '../dot-layer';
+import { buildInitialDotAnchor, DOT_SQUARE_SIZE } from '../dot';
 import { DOT_CHANNEL_ID } from '../spatial-config';
 
 function mockClock(now: number): ServerClock {
@@ -17,7 +17,14 @@ function mockClock(now: number): ServerClock {
   };
 }
 
-describe('dotLayer.evaluateFrame', () => {
+describe('complementColor', () => {
+  it('inverts RGB channels', () => {
+    expect(complementColor('#ff0000')).toBe('#00ffff');
+    expect(complementColor('#00ff00')).toBe('#ff00ff');
+  });
+});
+
+describe('evaluateDotFrame', () => {
   it('returns empty shapes when dot anchor missing', () => {
     const frame = dotLayer.evaluateFrame({
       snapshot: { anchors: {}, meta: {}, contentData: null },
@@ -27,7 +34,7 @@ describe('dotLayer.evaluateFrame', () => {
     expect(frame.shapes).toEqual([]);
   });
 
-  it('evaluates dot position from anchor at serverNow', () => {
+  it('evaluates square dot, complement background, and labels', () => {
     const at = 1000;
     const anchor = buildInitialDotAnchor(1920, 1080, at);
     const snapshot: CoreSnapshot = {
@@ -35,15 +42,20 @@ describe('dotLayer.evaluateFrame', () => {
       meta: {},
       contentData: null,
     };
-    const frame = dotLayer.evaluateFrame({
-      snapshot,
-      clock: mockClock(at + 500),
-      spatial: defaultSpatialMeta(),
-    });
-    expect(frame.shapes).toHaveLength(1);
-    expect(frame.shapes[0]!.width).toBe(200);
-    expect(frame.shapes[0]!.height).toBe(150);
-    expect(frame.shapes[0]!.x).toBeGreaterThanOrEqual(0);
-    expect(frame.shapes[0]!.y).toBeGreaterThanOrEqual(0);
+    const spatial = defaultSpatialMeta();
+    const frame = evaluateDotFrame(
+      { snapshot, clock: mockClock(at + 500), spatial },
+      { ripples: [], prevBounceCount: -1 },
+    );
+
+    const bg = frame.shapes.find((s) => s.label === 'bg');
+    const dot = frame.shapes.find((s) => s.label === 'dot');
+    expect(bg).toBeDefined();
+    expect(dot).toBeDefined();
+    expect(dot!.width).toBe(DOT_SQUARE_SIZE);
+    expect(dot!.height).toBe(DOT_SQUARE_SIZE);
+    expect(bg!.fill).toBe(complementColor(dot!.fill));
+    expect(dot!.x).toBeGreaterThanOrEqual(0);
+    expect(dot!.y).toBeGreaterThanOrEqual(0);
   });
 });

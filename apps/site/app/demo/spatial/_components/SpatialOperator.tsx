@@ -18,7 +18,7 @@ import {
   DOT_CHANNEL_ID,
 } from '@/lib/spatial-config';
 import type { DotAnchor } from '@/lib/dot';
-import { DEFAULT_SPATIAL_CONTENT_LAYER } from '@/lib/spatial-content-registry';
+import { useDotContentLayer } from '@/lib/dot-layer';
 import PoseEditor from './PoseEditor';
 
 export function SpatialOperator() {
@@ -27,7 +27,7 @@ export function SpatialOperator() {
   });
   const clock = useServerClock('/api/clock');
   const dotAnchor = useAnchor(DOT_CHANNEL_ID, SPATIAL_STREAM_ENDPOINT) as DotAnchor | null;
-  const contentLayer = DEFAULT_SPATIAL_CONTENT_LAYER;
+  const contentLayer = useDotContentLayer();
   const [newName, setNewName] = useState('');
 
   const names = useMemo(
@@ -130,7 +130,7 @@ export function SpatialOperator() {
           spatial={spatial}
           snapshot={snapshot}
           clock={clock}
-          evaluateFrame={contentLayer.evaluateFrame}
+          MapView={contentLayer.MapView}
           selectedScreenName={null}
         />
       </StampShell>

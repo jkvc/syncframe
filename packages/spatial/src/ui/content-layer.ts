@@ -3,7 +3,7 @@ import type { CoreSnapshot } from '@syncframe/core/server';
 import type { ServerClock } from '@syncframe/core/react';
 import type { ScreenPose, SpatialMeta } from '../types';
 
-/** Evaluated world-space frame — renderer-agnostic. One source of truth for appearance. */
+/** Evaluated world-space frame — data only; rendering is consumer-owned. */
 export interface WorldShape {
   x: number;
   y: number;
@@ -25,7 +25,7 @@ export interface WorldEvalContext {
   spatial: SpatialMeta;
 }
 
-/** Top-down map slot — world bbox dimensions passed to WorldFrameWorldView. */
+/** Top-down map slot — inside TopDownRoomMap's world viewBox. */
 export interface WorldPreviewContext extends WorldEvalContext {
   worldWidth: number;
   worldHeight: number;
@@ -40,18 +40,14 @@ export interface ContentLayerDisplayProps extends WorldEvalContext {
 /**
  * Content layer module.
  *
- * - `evaluateFrame` — the only place that defines what the content looks like (world coords).
- * - Top-down map (`TopDownRoomMap`) renders that frame at 0,0 in worldW×worldH with uniform
- *   scale (like an inline image), then draws screen pose overlays on top.
- * - Each display (`WorldFrameViewport`) crops to the screen pose bbox and stretches to fill
- *   the window.
- *
- * Override `Display` only when the wall needs a custom shell (offset decay, pano canvas, …).
- * Default display wiring lives in `ChromeFreeDisplay`.
+ * - `evaluateFrame` — world-space data (what exists where, with what color/opacity).
+ * - `MapView` / `Display` — consumer-owned renderers for the two projections.
+ *   Use `projectWorldFrameToViewport` from the lib for display coordinate math.
  */
 export interface SpatialContentLayer {
   id: string;
   label: string;
   evaluateFrame: (ctx: WorldEvalContext) => WorldFrame;
-  Display?: ComponentType<ContentLayerDisplayProps>;
+  MapView: ComponentType<WorldPreviewContext>;
+  Display: ComponentType<ContentLayerDisplayProps>;
 }

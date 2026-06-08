@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   mapWorldShapeToScreenPixels,
   projectWorldFrameToViewport,
-} from '../ui/render-world-frame';
+} from '../ui/world-projection';
 
 const pose = {
   worldX: 100,

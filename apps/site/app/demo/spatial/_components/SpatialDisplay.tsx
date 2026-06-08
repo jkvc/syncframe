@@ -8,9 +8,10 @@ import {
   SPATIAL_API_BASE,
   SPATIAL_STREAM_ENDPOINT,
 } from '@/lib/spatial-config';
-import { DEFAULT_SPATIAL_CONTENT_LAYER } from '@/lib/spatial-content-registry';
+import { useDotContentLayer } from '@/lib/dot-layer';
 
 export function SpatialDisplay() {
+  const contentLayer = useDotContentLayer();
   const params = useSearchParams();
   const screenName = params.get('screenName')?.trim() ?? '';
   const [registered, setRegistered] = useState(false);
@@ -38,7 +39,7 @@ export function SpatialDisplay() {
       streamEndpoint={SPATIAL_STREAM_ENDPOINT}
       apiBase={SPATIAL_API_BASE}
       clockEndpoint="/api/clock"
-      contentLayer={DEFAULT_SPATIAL_CONTENT_LAYER}
+      contentLayer={contentLayer}
       heartbeat
       presentation
     />

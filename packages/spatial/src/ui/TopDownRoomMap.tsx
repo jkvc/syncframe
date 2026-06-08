@@ -1,19 +1,19 @@
 'use client';
 
+import type { ComponentType } from 'react';
 import type { CoreSnapshot } from '@syncframe/core/server';
 import type { ServerClock } from '@syncframe/core/react';
 import { colorFromName } from '../color-from-name';
 import { isScreenOnline, listScreenNames } from '../reducers';
 import type { ScreenEntry, SpatialMeta } from '../types';
-import type { WorldEvalContext, WorldFrame } from './content-layer';
-import WorldFrameWorldView from './WorldFrameWorldView';
+import type { WorldPreviewContext } from './content-layer';
 
 export interface TopDownRoomMapProps {
   spatial: SpatialMeta;
   snapshot: CoreSnapshot;
   clock: ServerClock;
-  /** Single source of truth for content appearance — same function the displays use. */
-  evaluateFrame: (ctx: WorldEvalContext) => WorldFrame;
+  /** Consumer-owned world renderer (SVG, canvas, …) at native world scale. */
+  MapView: ComponentType<WorldPreviewContext>;
   selectedScreenName: string | null;
   onScreenSelect?: (name: string) => void;
 }
@@ -22,7 +22,7 @@ export default function TopDownRoomMap({
   spatial,
   snapshot,
   clock,
-  evaluateFrame,
+  MapView,
   selectedScreenName,
   onScreenSelect,
 }: TopDownRoomMapProps) {
@@ -32,7 +32,7 @@ export default function TopDownRoomMap({
   const now = Date.now();
   const names = listScreenNames(spatial);
 
-  const previewCtx = {
+  const previewCtx: WorldPreviewContext = {
     snapshot,
     clock,
     spatial,
@@ -50,7 +50,6 @@ export default function TopDownRoomMap({
         role="img"
         aria-label={`Top-down map of world ${worldWidth} by ${worldHeight}`}
       >
-        {/* World canvas — content at native world scale (no stretch). */}
         <rect
           x={0}
           y={0}
@@ -68,9 +67,8 @@ export default function TopDownRoomMap({
           strokeWidth={2}
           vectorEffect="non-scaling-stroke"
         />
-        <WorldFrameWorldView evaluateFrame={evaluateFrame} ctx={previewCtx} />
+        <MapView {...previewCtx} />
 
-        {/* Screen pose overlays — sub-window locations on top of world content. */}
         {names.map((name) => (
           <ScreenRect
             key={name}

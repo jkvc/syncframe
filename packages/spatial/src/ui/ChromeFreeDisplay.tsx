@@ -7,7 +7,6 @@ import CalibrationGrid from './CalibrationGrid';
 import DeletedScreenOverlay from './DeletedScreenOverlay';
 import IdentifyFlash from './IdentifyFlash';
 import type { SpatialContentLayer } from './content-layer';
-import WorldFrameViewport from './WorldFrameViewport';
 
 /** Fullscreen black — kiosk/presentation with no chrome or status text. */
 export function PresentationBlank() {
@@ -56,6 +55,8 @@ export default function ChromeFreeDisplay({
     heartbeat,
   });
 
+  const Display = contentLayer.Display;
+
   if (deleted) {
     if (presentation) return <PresentationBlank />;
     return (
@@ -74,9 +75,6 @@ export default function ChromeFreeDisplay({
     );
   }
 
-  const Display = contentLayer.Display;
-  const displayCtx = { snapshot, clock, spatial };
-
   return (
     <>
       {isCalibration && (
@@ -87,23 +85,15 @@ export default function ChromeFreeDisplay({
           clock={clock}
         />
       )}
-      {isContent &&
-        (Display ? (
-          <Display
-            pose={pose}
-            screenName={screenName}
-            snapshot={snapshot}
-            clock={clock}
-            spatial={spatial}
-          />
-        ) : (
-          <WorldFrameViewport
-            pose={pose}
-            evaluateFrame={contentLayer.evaluateFrame}
-            ctx={displayCtx}
-            className="fixed inset-0 overflow-hidden bg-black"
-          />
-        ))}
+      {isContent && (
+        <Display
+          pose={pose}
+          screenName={screenName}
+          snapshot={snapshot}
+          clock={clock}
+          spatial={spatial}
+        />
+      )}
       <IdentifyFlash trigger={identifyTrigger} screenName={screenName} />
     </>
   );
