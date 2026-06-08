@@ -71,12 +71,16 @@ export default function Home() {
           <LayerCard
             label="Layer 2"
             title="@syncframe/spatial"
-            description="Screen registry, world-coordinate poses, calibration UI. For multi-display setups where screens have geometric positions."
-            muted
+            description="Screen registry, world-coordinate poses, presence. Headless library for multi-display setups — demo includes calibration UI."
             actions={
-              <span className="caption-mono inline-flex h-7 items-center border-2 border-ink bg-surface-2 px-3.5 text-ink-faint">
-                Coming soon
-              </span>
+              <>
+                <Pill href="/docs/spatial" active size="xs">
+                  Read docs
+                </Pill>
+                <Pill href="/demo/spatial" size="xs">
+                  Try demo
+                </Pill>
+              </>
             }
           />
         </div>

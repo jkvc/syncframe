@@ -9,6 +9,7 @@
     "build:checkout": "CHECK_BUILD=1 pnpm --filter site build",
     "build:packages": "pnpm -r --filter './packages/*' build",
     "test": "vitest run",
+    "test:spatial-api": "node scripts/test-spatial-api.mjs",
     "test:watch": "vitest",
     "type-check": "pnpm -r type-check",
     "lint": "eslint .",

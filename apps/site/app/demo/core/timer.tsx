@@ -5,13 +5,13 @@ import { useServerClock, useAnchor } from '@syncframe/core/react';
 import type { ScalarMotion } from '@syncframe/core/react';
 import Pill from '@/components/editorial/Pill';
 import StampShell from '@/components/ui/StampShell';
-import { currentValue, speedMultiplier, isRunning, ROOM_ID, CHANNEL_ID, type TimerAction } from '@/lib/timer';
+import { currentValue, speedMultiplier, isRunning, CHANNEL_ID, type TimerAction } from '@/lib/timer';
 
 export function Timer() {
   const clock = useServerClock('/api/clock');
   const { serverNow } = clock;
 
-  const anchor = useAnchor<number, ScalarMotion>(ROOM_ID, CHANNEL_ID, '/api/timer/stream');
+  const anchor = useAnchor<number, ScalarMotion>(CHANNEL_ID, '/api/timer/stream');
   const anchorRef = useRef(anchor);
   anchorRef.current = anchor;
 

@@ -92,12 +92,14 @@ function evaluateScalar(
           database or cache.
         </p>
         <CodeBlock
-          code={`interface SyncStore {
-  getAnchor(roomId, key): Promise<Anchor | null>;
-  setAnchor(roomId, key, anchor): Promise<void>;
+          code={`class SyncServer {
+  constructor({ store, transport, namespace?: string });
+  getAnchor(channelId): Promise<Anchor | null>;
+  setAnchor(channelId, anchor): Promise<void>;
+  buildSnapshot(): Promise<CoreSnapshot>;
   // ... more methods
 }`}
-          note="Implement SyncStore to use Redis, Postgres, DynamoDB, or any backend."
+          note="Bind one namespace per SyncServer instance. Customers needing multiple partitions run multiple servers or implement SyncStore directly."
         />
       </DocSection>
 

@@ -28,6 +28,7 @@ export default [
       "**/.next-integration/**",
       "**/.turbo/**",
       "**/coverage/**",
+      "scripts/**",
     ],
   },
 ];

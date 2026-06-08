@@ -1,6 +1,6 @@
 {
   "name": "@syncframe/core",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Anchor-based dead-reckoning sync library — Layer 1 (time-event protocol)",
   "license": "MIT",
   "type": "module",

@@ -39,7 +39,7 @@ export interface RedisStoreOptions {
 
 /**
  * Anchors, meta, and content data are stored as JSON under namespaced keys.
- * The set of channel ids per room is tracked in a Redis set so `listAnchors`
+ * The set of channel ids per namespace is tracked in a Redis set so `listAnchors`
  * (and therefore snapshot building) works without key scanning.
  */
 export class RedisStore implements SyncStore {
@@ -51,65 +51,65 @@ export class RedisStore implements SyncStore {
     this.prefix = options.prefix ?? DEFAULT_PREFIX;
   }
 
-  private ns(roomId: string): string {
-    return `${this.prefix}:${roomId}`;
+  private ns(namespace: string): string {
+    return `${this.prefix}:${namespace}`;
   }
-  private anchorKey(roomId: string, channelId: string): string {
-    return `${this.ns(roomId)}:anchor:${channelId}`;
+  private anchorKey(namespace: string, channelId: string): string {
+    return `${this.ns(namespace)}:anchor:${channelId}`;
   }
-  private channelsKey(roomId: string): string {
-    return `${this.ns(roomId)}:channels`;
+  private channelsKey(namespace: string): string {
+    return `${this.ns(namespace)}:channels`;
   }
-  private metaKey(roomId: string): string {
-    return `${this.ns(roomId)}:meta`;
+  private metaKey(namespace: string): string {
+    return `${this.ns(namespace)}:meta`;
   }
-  private contentKey(roomId: string): string {
-    return `${this.ns(roomId)}:content`;
-  }
-
-  async getAnchor(roomId: string, channelId: string): Promise<AnyAnchor | null> {
-    return readJson<AnyAnchor>(this.redis, this.anchorKey(roomId, channelId));
+  private contentKey(namespace: string): string {
+    return `${this.ns(namespace)}:content`;
   }
 
-  async setAnchor(roomId: string, channelId: string, anchor: AnyAnchor): Promise<void> {
+  async getAnchor(namespace: string, channelId: string): Promise<AnyAnchor | null> {
+    return readJson<AnyAnchor>(this.redis, this.anchorKey(namespace, channelId));
+  }
+
+  async setAnchor(namespace: string, channelId: string, anchor: AnyAnchor): Promise<void> {
     await Promise.all([
-      this.redis.set(this.anchorKey(roomId, channelId), JSON.stringify(anchor)),
-      this.redis.sadd(this.channelsKey(roomId), channelId),
+      this.redis.set(this.anchorKey(namespace, channelId), JSON.stringify(anchor)),
+      this.redis.sadd(this.channelsKey(namespace), channelId),
     ]);
   }
 
-  async deleteAnchor(roomId: string, channelId: string): Promise<void> {
+  async deleteAnchor(namespace: string, channelId: string): Promise<void> {
     await Promise.all([
-      this.redis.del(this.anchorKey(roomId, channelId)),
-      this.redis.srem(this.channelsKey(roomId), channelId),
+      this.redis.del(this.anchorKey(namespace, channelId)),
+      this.redis.srem(this.channelsKey(namespace), channelId),
     ]);
   }
 
-  async listAnchors(roomId: string): Promise<Record<string, AnyAnchor | null>> {
-    const channels = await this.redis.smembers(this.channelsKey(roomId));
+  async listAnchors(namespace: string): Promise<Record<string, AnyAnchor | null>> {
+    const channels = await this.redis.smembers(this.channelsKey(namespace));
     const entries = await Promise.all(
       channels.map(async (channelId): Promise<[string, AnyAnchor | null]> => [
         channelId,
-        await this.getAnchor(roomId, channelId),
+        await this.getAnchor(namespace, channelId),
       ]),
     );
     return Object.fromEntries(entries);
   }
 
-  async getMeta(roomId: string): Promise<Record<string, unknown>> {
-    return (await readJson<Record<string, unknown>>(this.redis, this.metaKey(roomId))) ?? {};
+  async getMeta(namespace: string): Promise<Record<string, unknown>> {
+    return (await readJson<Record<string, unknown>>(this.redis, this.metaKey(namespace))) ?? {};
   }
 
-  async setMeta(roomId: string, meta: Record<string, unknown>): Promise<void> {
-    await this.redis.set(this.metaKey(roomId), JSON.stringify(meta));
+  async setMeta(namespace: string, meta: Record<string, unknown>): Promise<void> {
+    await this.redis.set(this.metaKey(namespace), JSON.stringify(meta));
   }
 
-  async getContentData(roomId: string): Promise<Record<string, unknown> | null> {
-    return readJson<Record<string, unknown>>(this.redis, this.contentKey(roomId));
+  async getContentData(namespace: string): Promise<Record<string, unknown> | null> {
+    return readJson<Record<string, unknown>>(this.redis, this.contentKey(namespace));
   }
 
-  async setContentData(roomId: string, data: Record<string, unknown>): Promise<void> {
-    await this.redis.set(this.contentKey(roomId), JSON.stringify(data));
+  async setContentData(namespace: string, data: Record<string, unknown>): Promise<void> {
+    await this.redis.set(this.contentKey(namespace), JSON.stringify(data));
   }
 }
 
@@ -136,20 +136,20 @@ export class RedisTransport implements SyncTransport {
     this.prefix = options.prefix ?? DEFAULT_PREFIX;
   }
 
-  private channel(roomId: string): string {
-    return `${this.prefix}:${roomId}:updates`;
+  private channel(namespace: string): string {
+    return `${this.prefix}:${namespace}:updates`;
   }
 
-  async publish(roomId: string, snapshot: CoreSnapshot): Promise<void> {
-    await this.redis.publish(this.channel(roomId), JSON.stringify(snapshot));
+  async publish(namespace: string, snapshot: CoreSnapshot): Promise<void> {
+    await this.redis.publish(this.channel(namespace), JSON.stringify(snapshot));
   }
 
   async subscribe(
-    roomId: string,
+    namespace: string,
     handler: (snapshot: CoreSnapshot) => void,
   ): Promise<() => void> {
     const subscriber = this.createSubscriber();
-    const channel = this.channel(roomId);
+    const channel = this.channel(namespace);
 
     subscriber.on('message', (incoming: string, message: string) => {
       if (incoming === channel) handler(JSON.parse(message) as CoreSnapshot);

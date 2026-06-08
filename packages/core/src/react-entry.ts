@@ -10,6 +10,14 @@
 export { useServerClock } from './useServerClock';
 export type { ServerClock } from './useServerClock';
 export { useAnchor } from './useAnchor';
+export {
+  subscribeSnapshotStream,
+  snapshotStreamCacheKey,
+} from './snapshotStreamCache';
+export type {
+  SnapshotSubscriber,
+  ConnectionSubscriber,
+} from './snapshotStreamCache';
 export { useScalarAnchor } from './useScalarAnchor';
 export { useSmoothedValue } from './useSmoothedValue';
 

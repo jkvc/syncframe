@@ -13,49 +13,49 @@ export class InMemoryStore implements SyncStore {
   private meta = new Map<string, Record<string, unknown>>();
   private contentData = new Map<string, Record<string, unknown>>();
 
-  private getRoomAnchors(roomId: string): Record<string, AnyAnchor | null> {
-    let room = this.anchors.get(roomId);
-    if (!room) {
-      room = {};
-      this.anchors.set(roomId, room);
+  private getNamespaceAnchors(namespace: string): Record<string, AnyAnchor | null> {
+    let bucket = this.anchors.get(namespace);
+    if (!bucket) {
+      bucket = {};
+      this.anchors.set(namespace, bucket);
     }
-    return room;
+    return bucket;
   }
 
-  async getAnchor(roomId: string, channelId: string): Promise<AnyAnchor | null> {
-    const room = this.anchors.get(roomId);
-    return room?.[channelId] ?? null;
+  async getAnchor(namespace: string, channelId: string): Promise<AnyAnchor | null> {
+    const bucket = this.anchors.get(namespace);
+    return bucket?.[channelId] ?? null;
   }
 
-  async setAnchor(roomId: string, channelId: string, anchor: AnyAnchor): Promise<void> {
-    const room = this.getRoomAnchors(roomId);
-    room[channelId] = anchor;
+  async setAnchor(namespace: string, channelId: string, anchor: AnyAnchor): Promise<void> {
+    const bucket = this.getNamespaceAnchors(namespace);
+    bucket[channelId] = anchor;
   }
 
-  async deleteAnchor(roomId: string, channelId: string): Promise<void> {
-    const room = this.anchors.get(roomId);
-    if (room) {
-      delete room[channelId];
+  async deleteAnchor(namespace: string, channelId: string): Promise<void> {
+    const bucket = this.anchors.get(namespace);
+    if (bucket) {
+      delete bucket[channelId];
     }
   }
 
-  async listAnchors(roomId: string): Promise<Record<string, AnyAnchor | null>> {
-    return { ...this.getRoomAnchors(roomId) };
+  async listAnchors(namespace: string): Promise<Record<string, AnyAnchor | null>> {
+    return { ...this.getNamespaceAnchors(namespace) };
   }
 
-  async getMeta(roomId: string): Promise<Record<string, unknown>> {
-    return this.meta.get(roomId) ?? {};
+  async getMeta(namespace: string): Promise<Record<string, unknown>> {
+    return this.meta.get(namespace) ?? {};
   }
 
-  async setMeta(roomId: string, meta: Record<string, unknown>): Promise<void> {
-    this.meta.set(roomId, meta);
+  async setMeta(namespace: string, meta: Record<string, unknown>): Promise<void> {
+    this.meta.set(namespace, meta);
   }
 
-  async getContentData(roomId: string): Promise<Record<string, unknown> | null> {
-    return this.contentData.get(roomId) ?? null;
+  async getContentData(namespace: string): Promise<Record<string, unknown> | null> {
+    return this.contentData.get(namespace) ?? null;
   }
 
-  async setContentData(roomId: string, data: Record<string, unknown>): Promise<void> {
-    this.contentData.set(roomId, data);
+  async setContentData(namespace: string, data: Record<string, unknown>): Promise<void> {
+    this.contentData.set(namespace, data);
   }
 }

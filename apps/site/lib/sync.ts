@@ -11,15 +11,23 @@ import { SyncServer } from '@syncframe/core/server';
 import { RedisStore, RedisTransport } from '@syncframe/redis';
 import { getRedis, createSubscriber } from '@/lib/redis';
 
-// Room/channel constants live in lib/timer (client-safe). Re-exported here for
-// route convenience.
-export { ROOM_ID, CHANNEL_ID } from '@/lib/timer';
+export { CHANNEL_ID } from '@/lib/timer';
+
+/** Timer demo namespace — bound at SyncServer construction, not exposed to clients. */
+export const TIMER_NAMESPACE = 'global';
 
 const globalForSync = globalThis as typeof globalThis & { __syncServer?: SyncServer };
 
-export function getSyncServer(): SyncServer {
-  return (globalForSync.__syncServer ??= new SyncServer({
+function createSyncServer(): SyncServer {
+  return new SyncServer({
     store: new RedisStore({ redis: getRedis() }),
     transport: new RedisTransport({ redis: getRedis(), createSubscriber }),
-  }));
+    namespace: TIMER_NAMESPACE,
+  });
+}
+
+export function getSyncServer(): SyncServer {
+  const existing = globalForSync.__syncServer;
+  if (existing && typeof existing.ensureAnchor === 'function') return existing;
+  return (globalForSync.__syncServer = createSyncServer());
 }

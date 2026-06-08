@@ -4,12 +4,6 @@ Tracked shortcuts and deferred work. Delete entries once resolved.
 
 ## Entries
 
-### [2026-06-06] Spatial package is still a placeholder stub
-
-- **Context:** `@syncframe/core` and `@syncframe/redis` are implemented and exercised by the timer demo, but `@syncframe/spatial` is still an empty barrel with a `VERSION` export only.
-- **File(s):** `packages/spatial/src/index.ts`
-- **Fix:** Implement the screen registry, `ScreenPose`, world bbox, and calibration UI on top of `@syncframe/core`. It rides the existing `@syncframe/redis` backend with no adapter changes (see `notes/2026-06-06-package-architecture.md`).
-
 ### [2026-06-06] No adapter packages yet
 
 - **Context:** The demo site wires Next.js API routes directly against `@syncframe/core/server`. Framework-specific route handlers (Next.js, Express, Hono) are still planned as thin adapter packages.
@@ -22,11 +16,23 @@ Tracked shortcuts and deferred work. Delete entries once resolved.
 - **File(s):** TBD — `.github/workflows/`
 - **Fix:** Add a workflow that runs `type-check → lint → test → build`.
 
-### [2026-06-06] Spatial demo + docs are placeholders
+### [2026-06-07] Spatial demo API has no authentication
 
-- **Context:** `apps/site` has a working timer demo (`/demo/core`) and docs, but the `/demo/spatial` and `/docs/spatial` pages are placeholders pending the spatial package.
-- **File(s):** `apps/site/app/demo/spatial/`, `apps/site/app/docs/spatial/`
-- **Fix:** Build the spatial demo + docs once `@syncframe/spatial` is functional.
+- **Context:** All `/api/spatial/*` routes are open to any visitor. Mutations affect the shared `spatial-demo` room (register/delete screens, poses, dot control, identify).
+- **File(s):** `apps/site/app/api/spatial/`
+- **Fix:** Gate mutations behind auth or a dev-only env flag; or scope rooms per tenant/session.
+
+### [2026-06-07] No world-bbox resize in spatial demo
+
+- **Context:** World canvas is fixed at 1920×1080. Cabin's screen-sync demo has `/api/screen-sync/world-bbox` to resize and re-anchor the dot.
+- **File(s):** `apps/site/app/api/spatial/`, `packages/spatial/src/reducers.ts`
+- **Fix:** Add `setWorldBbox` reducer + route, re-anchor dot on resize (mirror cabin world-bbox route).
+
+### [2026-06-07] SSE connection sharing via core snapshot cache
+
+- **Context:** `useAnchor` and `useSpatialSnapshot` share one EventSource per `streamEndpoint` through `subscribeSnapshotStream` in `@syncframe/core/react`. Without this, operator + display pages opened duplicate SSE connections per hook.
+- **File(s):** `packages/core/src/snapshotStreamCache.ts`, `packages/core/src/useAnchor.ts`, `packages/spatial/src/react/useSpatialSnapshot.ts`
+- **Fix:** N/A — intentional pattern. Extend cache if additional snapshot consumers are added.
 
 ### [2026-06-07] Unused Instrument Serif font load
 

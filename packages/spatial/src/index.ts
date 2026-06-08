@@ -1,8 +1,9 @@
-/**
- * @syncframe/spatial — placeholder barrel export.
- *
- * Layer 2: screen registry, poses, world bbox, calibration UI.
- * Depends on @syncframe/core.
- */
-
-export const VERSION = "0.0.0";
+export * from './server-entry';
+export {
+  useSpatialSnapshot,
+  useSelfScreen,
+  useDisplaySurface,
+} from './react-entry';
+export type { UseSpatialSnapshotOptions } from './react/useSpatialSnapshot';
+export type { UseSelfScreenOptions } from './react/useSelfScreen';
+export type { UseDisplaySurfaceOptions } from './react/useDisplaySurface';

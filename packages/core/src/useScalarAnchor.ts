@@ -1,7 +1,7 @@
 /**
  * @syncframe/core — scalar anchor subscription hook.
  *
- * Subscribes to a room's anchor updates via SSE (through `useAnchor`) and
+ * Subscribes to anchor updates via SSE (through `useAnchor`) and
  * returns the current scalar value extrapolated at server time, re-evaluated
  * every frame via requestAnimationFrame.
  *
@@ -16,12 +16,11 @@ import { evaluateScalar } from './evaluators';
 import { useAnchor } from './useAnchor';
 
 export function useScalarAnchor(
-  roomId: string,
   channelId: string,
   streamEndpoint: string,
   getServerNow: () => number,
 ): number | null {
-  const anchor = useAnchor<number, ScalarMotion>(roomId, channelId, streamEndpoint);
+  const anchor = useAnchor<number, ScalarMotion>(channelId, streamEndpoint);
   const [value, setValue] = useState<number | null>(null);
 
   const anchorRef = useRef(anchor);

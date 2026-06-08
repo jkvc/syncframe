@@ -4,21 +4,25 @@
  * Pluggable storage layer. Core ships InMemoryStore by default;
  * @syncframe/redis ships RedisStore. Consumers can implement their own
  * (PostgresStore, etc.).
+ *
+ * The `namespace` partition key is a low-level primitive. Typical apps bind
+ * one namespace per SyncServer instance; customers needing multiple partitions
+ * run multiple servers or wire the store directly.
  */
 
 import type { AnyAnchor, CoreSnapshot } from './types';
 
 export interface SyncStore {
-  getAnchor(roomId: string, channelId: string): Promise<AnyAnchor | null>;
-  setAnchor(roomId: string, channelId: string, anchor: AnyAnchor): Promise<void>;
-  deleteAnchor(roomId: string, channelId: string): Promise<void>;
-  listAnchors(roomId: string): Promise<Record<string, AnyAnchor | null>>;
+  getAnchor(namespace: string, channelId: string): Promise<AnyAnchor | null>;
+  setAnchor(namespace: string, channelId: string, anchor: AnyAnchor): Promise<void>;
+  deleteAnchor(namespace: string, channelId: string): Promise<void>;
+  listAnchors(namespace: string): Promise<Record<string, AnyAnchor | null>>;
 
-  getMeta(roomId: string): Promise<Record<string, unknown>>;
-  setMeta(roomId: string, meta: Record<string, unknown>): Promise<void>;
+  getMeta(namespace: string): Promise<Record<string, unknown>>;
+  setMeta(namespace: string, meta: Record<string, unknown>): Promise<void>;
 
-  getContentData(roomId: string): Promise<Record<string, unknown> | null>;
-  setContentData(roomId: string, data: Record<string, unknown>): Promise<void>;
+  getContentData(namespace: string): Promise<Record<string, unknown> | null>;
+  setContentData(namespace: string, data: Record<string, unknown>): Promise<void>;
 }
 
 /**
@@ -26,12 +30,12 @@ export interface SyncStore {
  */
 export async function buildCoreSnapshot(
   store: SyncStore,
-  roomId: string,
+  namespace: string,
 ): Promise<CoreSnapshot> {
   const [anchors, meta, contentData] = await Promise.all([
-    store.listAnchors(roomId),
-    store.getMeta(roomId),
-    store.getContentData(roomId),
+    store.listAnchors(namespace),
+    store.getMeta(namespace),
+    store.getContentData(namespace),
   ]);
 
   return { anchors, meta, contentData };

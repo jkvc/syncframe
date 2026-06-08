@@ -62,7 +62,7 @@ The library has exactly two layers:
 | Layer     | Package               | Contains                                                                                                      | Does NOT contain                                                    |
 | --------- | --------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | **Core**  | `@syncframe/core`     | Clock sync, `Anchor<T,M>`, evaluators, smoother, `SyncStore` + `SyncTransport` interfaces, React hooks        | Anything about screens, poses, calibration, world bboxes            |
-| **Spatial** | `@syncframe/spatial` | Screen registry, `ScreenPose`, world bbox, calibration UI, `ChromeFreeDisplay`                              | Anything that interprets anchors (that's a consumer concern)        |
+| **Spatial** | `@syncframe/spatial` | Screen registry, `ScreenPose`, world bbox, presence, coord math, `SpatialServer`, headless React hooks        | UI components, motion evaluators, content layers (consumer concern)   |
 
 **The rule:** Core has no notion of screens. Spatial has no motion math of its own — it uses `@syncframe/core` purely as infrastructure.
 

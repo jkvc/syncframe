@@ -19,12 +19,7 @@ export type TimerAnchor = Anchor<number, ScalarMotion>;
 
 export type TimerAction = 'reset' | 'toggle' | 'speed';
 
-/**
- * The timer is a single global room with one anchor channel. Kept here (not in
- * the Redis adapter) so client components can import them without pulling the
- * server-only Redis module into the browser bundle.
- */
-export const ROOM_ID = 'global';
+/** Timer anchor channel id — client-safe. Namespace is bound server-side in lib/sync.ts. */
 export const CHANNEL_ID = 'timer';
 
 /** Countdown start value, in seconds. */
