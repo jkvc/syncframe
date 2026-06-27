@@ -1,8 +1,13 @@
+import type { Metadata } from 'next';
 import InteriorPageShell from '@/components/editorial/InteriorPageShell';
 import PageStampHeader from '@/components/editorial/PageStampHeader';
 import DocSection, { StepItem, StepList } from '@/components/docs/DocSection';
 import { ActionRow, Pill } from '@/components/site/PageChrome';
+import { pageMetadata } from '@/lib/metadata';
+import { RING_DEMO } from '@/lib/site-routes';
 import { RingOperator } from './_components/RingOperator';
+
+export const metadata: Metadata = pageMetadata(RING_DEMO);
 
 export default function RingDemoPage() {
   return (

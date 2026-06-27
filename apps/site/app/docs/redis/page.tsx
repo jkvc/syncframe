@@ -1,12 +1,19 @@
+import type { Metadata } from "next";
+import DocJsonLd from "@/components/DocJsonLd";
 import InteriorPageShell from "@/components/editorial/InteriorPageShell";
 import PageStampHeader from "@/components/editorial/PageStampHeader";
 import CodeBlock from "@/components/docs/CodeBlock";
 import DocSection from "@/components/docs/DocSection";
 import { ActionRow, Pill } from "@/components/site/PageChrome";
+import { pageMetadata } from "@/lib/metadata";
+import { REDIS_DOC } from "@/lib/site-routes";
+
+export const metadata: Metadata = pageMetadata(REDIS_DOC);
 
 export default function RedisDocsPage() {
   return (
     <InteriorPageShell>
+      <DocJsonLd route={REDIS_DOC} />
       <PageStampHeader
         meta={{ eyebrow: "Adapter", trailing: "@syncframe/redis" }}
         title="@syncframe/redis"

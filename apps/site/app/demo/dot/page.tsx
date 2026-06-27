@@ -1,8 +1,13 @@
+import type { Metadata } from 'next';
 import InteriorPageShell from '@/components/editorial/InteriorPageShell';
 import PageStampHeader from '@/components/editorial/PageStampHeader';
 import DocSection, { StepItem, StepList } from '@/components/docs/DocSection';
 import { ActionRow, Pill } from '@/components/site/PageChrome';
+import { pageMetadata } from '@/lib/metadata';
+import { DOT_DEMO } from '@/lib/site-routes';
 import { DotOperator } from './_components/DotOperator';
+
+export const metadata: Metadata = pageMetadata(DOT_DEMO);
 
 export default function DotDemoPage() {
   return (

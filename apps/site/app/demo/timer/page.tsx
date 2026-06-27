@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import InteriorPageShell from "@/components/editorial/InteriorPageShell";
 import PageStampHeader from "@/components/editorial/PageStampHeader";
 import DocSection, { StepItem, StepList } from "@/components/docs/DocSection";
 import { ActionRow, Pill } from "@/components/site/PageChrome";
+import { pageMetadata } from "@/lib/metadata";
+import { TIMER_DEMO } from "@/lib/site-routes";
 import { Timer } from "./timer";
 import { QrCode } from "./qr-code";
+
+export const metadata: Metadata = pageMetadata(TIMER_DEMO);
 
 export default function TimerDemoPage() {
   return (

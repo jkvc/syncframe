@@ -1,12 +1,19 @@
+import type { Metadata } from "next";
+import DocJsonLd from "@/components/DocJsonLd";
 import InteriorPageShell from "@/components/editorial/InteriorPageShell";
 import PageStampHeader from "@/components/editorial/PageStampHeader";
 import CodeBlock from "@/components/docs/CodeBlock";
 import DocSection, { RefList, RefRow } from "@/components/docs/DocSection";
 import { ActionRow, Pill } from "@/components/site/PageChrome";
+import { pageMetadata } from "@/lib/metadata";
+import { CORE_DOC } from "@/lib/site-routes";
+
+export const metadata: Metadata = pageMetadata(CORE_DOC);
 
 export default function CoreDocs() {
   return (
     <InteriorPageShell>
+      <DocJsonLd route={CORE_DOC} />
       <PageStampHeader
         meta={{ eyebrow: "Layer 1" }}
         title="@syncframe/core"

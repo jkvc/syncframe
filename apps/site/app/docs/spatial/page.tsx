@@ -1,12 +1,19 @@
+import type { Metadata } from 'next';
+import DocJsonLd from '@/components/DocJsonLd';
 import InteriorPageShell from '@/components/editorial/InteriorPageShell';
 import PageStampHeader from '@/components/editorial/PageStampHeader';
 import CodeBlock from '@/components/docs/CodeBlock';
 import DocSection, { RefList, RefRow, StepItem, StepList } from '@/components/docs/DocSection';
 import { ActionRow, Pill } from '@/components/site/PageChrome';
+import { pageMetadata } from '@/lib/metadata';
+import { SPATIAL_DOC } from '@/lib/site-routes';
+
+export const metadata: Metadata = pageMetadata(SPATIAL_DOC);
 
 export default function SpatialDocsPage() {
   return (
     <InteriorPageShell>
+      <DocJsonLd route={SPATIAL_DOC} />
       <PageStampHeader
         meta={{ eyebrow: 'Layer 2', trailing: '@syncframe/spatial' }}
         className="mb-12"
